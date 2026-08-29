@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graphitech | Administración</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <style>
+    :root {
+      --primary: #1e40af;
+      --sidebar: #0f172a;
+      --bg: #f1f5f9;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body { display: flex; height: 100vh; background: var(--bg); }
+    .sidebar {
+      width: 260px; background: var(--sidebar); color: white;
+      display: flex; flex-direction: column; padding: 20px 0;
+    }
+    .logo-box { text-align: center; padding: 10px 20px 25px; border-bottom: 1px solid #334155; }
+    .logo-box img { width: 90px; height: 90px; border-radius: 50%; background: white; padding: 4px; }
+    .logo-box h2 { font-size: 1.1rem; margin-top: 8px; letter-spacing: 1px; }
+    .logo-box p { font-size: 0.7rem; color: #94a3b8; }
+    .nav-btn {
+      padding: 14px 25px; color: #cbd5e1; cursor: pointer; border: none;
+      background: none; text-align: left; font-size: 0.95rem; transition: 0.2s;
+    }
+    .nav-btn:hover, .nav-btn.active { background: #1e293b; color: white; }
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .header {
+      background: white; padding: 18px 30px; border-bottom: 1px solid #e2e8f0;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .content { flex: 1; padding: 25px 30px; overflow-y: auto; }
+    .card {
+      background: white; border-radius: 12px; padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 20px;
+    }
+    h3 { margin-bottom: 15px; color: #1e293b; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; color: #64748b; font-weight: 600; }
+    .btn {
+      padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer;
+      font-size: 0.85rem; font-weight: 500;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-success { background: #16a34a; color: white; }
+    .btn-danger { background: #dc2626; color: white; }
+    .btn-secondary { background: #64748b; color: white; }
+    input, select, textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1;
+      border-radius: 6px; margin-bottom: 12px; font-size: 0.9rem;
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .print-area { display: none; }
+    @media print {
+      body * { visibility: hidden; }
+      .print-area, .print-area * { visibility: visible; }
+      .print-area { display: block; position: absolute; left: 0; top: 0; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo-box">
+      <img src="logo.jpg" alt="Graphitech">
+      <h2>GRAPHITECH</h2>
+      <p>Administración</p>
+    </div>
+    <button class="nav-btn active" onclick="showSection('inventario')">Inventario</button>
+    <button class="nav-btn" onclick="showSection('ventas')">Ventas</button>
+    <button class="nav-btn" onclick="showSection('compras')">Compras</button>
+    <button class="nav-btn" onclick="showSection('gastos')">Gastos</button>
+    <button class="nav-btn" onclick="showSection('cotizaciones')">Cotizaciones</button>
+    <button class="nav-btn" onclick="showSection('facturas')">Facturas</button>
+  </div>
+
+  <div class="main">
+    <div class="header">
+      <h2 id="section-title">Inventario</h2>
+      <span id="fecha"></span>
+    </div>
+    <div class="content">
+
+      <!-- INVENTARIO -->
+      <div id="inventario" class="section active">
+        <div class="card">
+          <h3>Agregar Producto</h3>
+          <div class="form-grid">
+            <input type="text" id="prod-nombre" placeholder="Nombre del producto">
+            <input type="number" id="prod-precio" placeholder="Precio" step="0.01">
+            <input type="number" id="prod-stock" placeholder="Stock">
+            <input type="text" id="prod-categoria" placeholder="Categoría (Camisetas, Gorras...)">
+          </div>
+          <button class="btn btn-primary" onclick="agregarProducto()">Guardar Producto</button>
+        </div>
+        <div class="card">
+          <h3>Lista de Productos</h3>
+          <table>
+            <thead><tr><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr></thead>
+            <tbody id="tabla-inventario"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VENTAS -->
+      <div id="ventas" class="section">
+        <div class="card">
+          <h3>Nueva Venta</h3>
+          <div class="form-grid">
+            <input type="text" id="venta-cliente" placeholder="Cliente">
+            <input type="text" id="venta-producto" placeholder="Producto">
+            <input type="number" id="venta-cantidad" placeholder="Cantidad">
+            <input type="number" id="venta-total" placeholder="Total $" step="0.01">
+          </div>
+          <button class="btn btn-success" onclick="agregarVenta()">Registrar Venta</button>
+        </div>
+        <div class="card">
+          <h3>Historial de Ventas</h3>
+          <table>
+            <thead><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cantidad</th><th>Total</th></tr></thead>
+            <tbody id="tabla-ventas"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- COMPRAS -->
+      <div id="compras" class="section">
+        <div class="card">
+          <h3>Nueva Compra</h3>
+          <div class="form-grid">
+            <input type="text" id="compra-proveedor" placeholder="Proveedor">
+            <input type="text" id="compra-descripcion" placeholder="Descripción">
+            <input type="number" id="compra-monto" placeholder="Monto $" step="0.01">
+          </div>
+          <button class="btn btn-primary" onclick="agregarCompra()">Registrar Compra</button>
+        </div>
+        <div class="card">
+          <h3>Historial de Compras</h3>
+          <table>
+            <thead><tr><th>Fecha</th><th>Proveedor</th><th>Descripción</th><th>Monto</th></tr></thead>
+            <tbody id="tabla-compras"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GASTOS -->
+      <div id="gastos" class="section">
+        <div class="card">
+          <h3>Nuevo Gasto</h3>
+          <div class="form-grid">
+            <input type="text" id="gasto-descripcion" placeholder="Descripción del gasto">
+            <input type="number" id="gasto-monto" placeholder="Monto $" step="0.01">
+          </div>
+          <button class="btn btn-danger" onclick="agregarGasto()">Registrar Gasto</button>
+        </div>
+        <div class="card">
+          <h3>Historial de Gastos</h3>
+          <table>
+            <thead><tr><th>Fecha</th><th>Descripción</th><th>Monto</th></tr></thead>
+            <tbody id="tabla-gastos"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- COTIZACIONES -->
+      <div id="cotizaciones" class="section">
+        <div class="card">
+          <h3>Nueva Cotización</h3>
+          <div class="form-grid">
+            <input type="text" id="cot-cliente" placeholder="Cliente">
+            <input type="text" id="cot-producto" placeholder="Producto / Servicio">
+            <input type="number" id="cot-cantidad" placeholder="Cantidad">
+            <input type="number" id="cot-precio" placeholder="Precio unitario" step="0.01">
+          </div>
+          <button class="btn btn-primary" onclick="generarCotizacion()">Generar Cotización</button>
+        </div>
+        <div class="card">
+          <h3>Cotizaciones</h3>
+          <table>
+            <thead><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Total</th><th>Acciones</th></tr></thead>
+            <tbody id="tabla-cotizaciones"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- FACTURAS -->
+      <div id="facturas" class="section">
+        <div class="card">
+          <h3>Nueva Factura</h3>
+          <div class="form-grid">
+            <input type="text" id="fac-cliente" placeholder="Cliente">
+            <input type="text" id="fac-producto" placeholder="Producto / Servicio">
+            <input type="number" id="fac-cantidad" placeholder="Cantidad">
+            <input type="number" id="fac-precio" placeholder="Precio unitario" step="0.01">
+          </div>
+          <button class="btn btn-success" onclick="generarFactura()">Generar Factura</button>
+        </div>
+        <div class="card">
+          <h3>Facturas</h3>
+          <table>
+            <thead><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Total</th><th>Acciones</th></tr></thead>
+            <tbody id="tabla-facturas"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ÁREA DE IMPRESIÓN -->
+  <div class="print-area" id="print-area"></div>
+
+  <script>
+    // ===== FIREBASE CONFIG =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyC60gsrqYB9LLmPph2Swb9jlSNJ5KEayM8",
+      authDomain: "graphitech507.firebaseapp.com",
+      databaseURL: "https://graphitech507-default-rtdb.firebaseio.com",
+      projectId: "graphitech507",
+      storageBucket: "graphitech507.firebasestorage.app",
+      messagingSenderId: "765632830610",
+      appId: "1:765632830610:web:f94c4c303443f58b5cda4b",
+      measurementId: "G-TRDHVY5LZE"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ===== NAVEGACIÓN =====
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      event.target.classList.add('active');
+      document.getElementById('section-title').textContent = event.target.textContent;
+    }
+
+    document.getElementById('fecha').textContent = new Date().toLocaleDateString('es-PA');
+
+    // ===== INVENTARIO =====
+    function agregarProducto() {
+      const nombre = document.getElementById('prod-nombre').value;
+      const precio = document.getElementById('prod-precio').value;
+      const stock = document.getElementById('prod-stock').value;
+      const categoria = document.getElementById('prod-categoria').value;
+      if (!nombre) return alert('Escribe el nombre');
+      db.ref('inventario').push({ nombre, precio, stock, categoria });
+      document.getElementById('prod-nombre').value = '';
+      document.getElementById('prod-precio').value = '';
+      document.getElementById('prod-stock').value = '';
+      document.getElementById('prod-categoria').value = '';
+    }
+
+    db.ref('inventario').on('value', snap => {
+      const tbody = document.getElementById('tabla-inventario');
+      tbody.innerHTML = '';
+      snap.forEach(child => {
+        const p = child.val();
+        tbody.innerHTML += `<tr>
+          <td>${p.nombre}</td><td>${p.categoria||''}</td>
+          <td>$${parseFloat(p.precio).toFixed(2)}</td><td>${p.stock}</td>
+          <td><button class="btn btn-danger" onclick="db.ref('inventario/${child.key}').remove()">Eliminar</button></td>
+        </tr>`;
+      });
+    });
+
+    // ===== VENTAS =====
+    function agregarVenta() {
+      const cliente = document.getElementById('venta-cliente').value;
+      const producto = document.getElementById('venta-producto').value;
+      const cantidad = document.getElementById('venta-cantidad').value;
+      const total = document.getElementById('venta-total').value;
+      if (!cliente || !producto) return alert('Completa los datos');
+      db.ref('ventas').push({
+        fecha: new Date().toLocaleString('es-PA'),
+        cliente, producto, cantidad, total
+      });
+      ['venta-cliente','venta-producto','venta-cantidad','venta-total'].forEach(id => document.getElementById(id).value = '');
+    }
+
+    db.ref('ventas').on('value', snap => {
+      const tbody = document.getElementById('tabla-ventas');
+      tbody.innerHTML = '';
+      snap.forEach(child => {
+        const v = child.val();
+        tbody.innerHTML += `<tr>
+          <td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td>
+          <td>${v.cantidad}</td><td>$${parseFloat(v.total).toFixed(2)}</td>
+        </tr>`;
+      });
+    });
+
+    // ===== COMPRAS =====
+    function agregarCompra() {
+      const proveedor = document.getElementById('compra-proveedor').value;
+      const descripcion = document.getElementById('compra-descripcion').value;
+      const monto = document.getElementById('compra-monto').value;
+      if (!proveedor) return alert('Escribe el proveedor');
+      db.ref('compras').push({
+        fecha: new Date().toLocaleString('es-PA'),
+        proveedor, descripcion, monto
+      });
+      ['compra-proveedor','compra-descripcion','compra-monto'].forEach(id => document.getElementById(id).value = '');
+    }
+
+    db.ref('compras').on('value', snap => {
+      const tbody = document.getElementById('tabla-compras');
+      tbody.innerHTML = '';
+      snap.forEach(child => {
+        const c = child.val();
+        tbody.innerHTML += `<tr>
+          <td>${c.fecha}</td><td>${c.proveedor}</td><td>${c.descripcion}</td>
+          <td>$${parseFloat(c.monto).toFixed(2)}</td>
+        </tr>`;
+      });
+    });
+
+    // ===== GASTOS =====
+    function agregarGasto() {
+      const descripcion = document.getElementById('gasto-descripcion').value;
+      const monto = document.getElementById('gasto-monto').value;
+      if (!descripcion) return alert('Escribe la descripción');
+      db.ref('gastos').push({
+        fecha: new Date().toLocaleString('es-PA'),
+        descripcion, monto
+      });
+      document.getElementById('gasto-descripcion').value = '';
+      document.getElementById('gasto-monto').value = '';
+    }
+
+    db.ref('gastos').on('value', snap => {
+      const tbody = document.getElementById('tabla-gastos');
+      tbody.innerHTML = '';
+      snap.forEach(child => {
+        const g = child.val();
+        tbody.innerHTML += `<tr>
+          <td>${g.fecha}</td><td>${g.descripcion}</td>
+          <td>$${parseFloat(g.monto).toFixed(2)}</td>
+        </tr>`;
+      });
+    });
+
+    // ===== COTIZACIONES & FACTURAS =====
+    function generarDocumento(tipo) {
+      const prefijo = tipo === 'cotizacion' ? 'cot' : 'fac';
+      const cliente = document.getElementById(`${prefijo}-cliente`).value;
+      const producto = document.getElementById(`${prefijo}-producto`).value;
+      const cantidad = parseFloat(document.getElementById(`${prefijo}-cantidad`).value) || 1;
+      const precio = parseFloat(document.getElementById(`${prefijo}-precio`).value) || 0;
+      const total = cantidad * precio;
+      if (!cliente || !producto) return alert('Completa los datos');
+
+      const data = {
+        fecha: new Date().toLocaleString('es-PA'),
+        cliente, producto, cantidad, precio, total
+      };
+      db.ref(tipo === 'cotizacion' ? 'cotizaciones' : 'facturas').push(data);
+      imprimirDocumento(tipo, data);
+      [`${prefijo}-cliente`,`${prefijo}-producto`,`${prefijo}-cantidad`,`${prefijo}-precio`].forEach(id => document.getElementById(id).value = '');
+    }
+
+    function generarCotizacion() { generarDocumento('cotizacion'); }
+    function generarFactura() { generarDocumento('factura'); }
+
+    function imprimirDocumento(tipo, data) {
+      const titulo = tipo === 'cotizacion' ? 'COTIZACIÓN' : 'FACTURA';
+      const area = document.getElementById('print-area');
+      area.innerHTML = `
+        <div style="padding:40px; font-family:Arial; max-width:800px; margin:auto;">
+          <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px;">
+            <img src="logo.jpg" style="width:80px; height:80px; border-radius:50%;">
+            <div>
+              <h1 style="margin:0; color:#1e40af;">GRAPHITECH</h1>
+              <p style="margin:0; color:#64748b;">Servicio Técnico • Impresiones</p>
+              <p style="margin:0; font-size:0.85rem;">Chanis - Frente a Farmacias Metro | WhatsApp: 6002-3188</p>
+            </div>
+          </div>
+          <h2 style="text-align:center; margin-bottom:25px;">${titulo}</h2>
+          <p><strong>Fecha:</strong> ${data.fecha}</p>
+          <p><strong>Cliente:</strong> ${data.cliente}</p>
+          <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+            <thead>
+              <tr style="background:#f1f5f9;">
+                <th style="padding:10px; border:1px solid #cbd5e1;">Producto</th>
+                <th style="padding:10px; border:1px solid #cbd5e1;">Cantidad</th>
+                <th style="padding:10px; border:1px solid #cbd5e1;">Precio</th>
+                <th style="padding:10px; border:1px solid #cbd5e1;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:10px; border:1px solid #cbd5e1;">${data.producto}</td>
+                <td style="padding:10px; border:1px solid #cbd5e1; text-align:center;">${data.cantidad}</td>
+                <td style="padding:10px; border:1px solid #cbd5e1;">$${data.precio.toFixed(2)}</td>
+                <td style="padding:10px; border:1px solid #cbd5e1;">$${data.total.toFixed(2)}</td>
+              </tr>
+            </tbody>
+          </table>
+          <h3 style="text-align:right; margin-top:25px;">Total: $${data.total.toFixed(2)}</h3>
+          <p style="margin-top:40px; font-size:0.85rem; color:#64748b; text-align:center;">
+            Gracias por preferir Graphitech
+          </p>
+        </div>
+      `;
+      window.print();
+    }
+
+    // Cargar historiales de cotizaciones y facturas
+    db.ref('cotizaciones').on('value', snap => {
+      const tbody = document.getElementById('tabla-cotizaciones');
+      tbody.innerHTML = '';
+      snap.forEach(child => {
+        const c = child.val();
+        tbody.innerHTML += `<tr>
+          <td>${c.fecha}</td><td>${c.cliente}</td><td>${c.producto}</td>
+          <td>$${parseFloat(c.total).toFixed(2)}</td>
+          <td><button class="btn btn-secondary" onclick='imprimirDocumento("cotizacion", ${JSON.stringify(c)})'>Imprimir</button></td>
+        </tr>`;
+      });
+    });
+
+    db.ref('facturas').on('value', snap => {
+      const tbody = document.getElementById('tabla-facturas');
+      tbody.innerHTML = '';
+      snap.forEach(child => {
+        const f = child.val();
+        tbody.innerHTML += `<tr>
+          <td>${f.fecha}</td><td>${f.cliente}</td><td>${f.producto}</td>
+          <td>$${parseFloat(f.total).toFixed(2)}</td>
+          <td><button class="btn btn-secondary" onclick='imprimirDocumento("factura", ${JSON.stringify(f)})'>Imprimir</button></td>
+        </tr>`;
+      });
+    });
+  </script>
+</body>
+</html>
