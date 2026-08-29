@@ -7,216 +7,356 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <style>
-    :root {
-      --primary: #1e40af;
-      --sidebar: #0f172a;
-      --bg: #f1f5f9;
+    :root { --primary:#1e40af; --sidebar:#0f172a; --bg:#f1f5f9; --success:#16a34a; --danger:#dc2626; --warning:#d97706; }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
+    body{display:flex;height:100vh;background:var(--bg)}
+    .sidebar{width:250px;background:var(--sidebar);color:#fff;display:flex;flex-direction:column;padding:15px 0;flex-shrink:0}
+    .logo-box{text-align:center;padding:10px 15px 20px;border-bottom:1px solid #334155}
+    .logo-box img{width:80px;height:80px;border-radius:50%;background:#fff;padding:3px}
+    .logo-box h2{font-size:1rem;margin-top:6px;letter-spacing:1px}
+    .logo-box p{font-size:.7rem;color:#94a3b8}
+    .nav-btn{padding:12px 22px;color:#cbd5e1;cursor:pointer;border:none;background:none;text-align:left;font-size:.9rem;width:100%}
+    .nav-btn:hover,.nav-btn.active{background:#1e293b;color:#fff}
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .header{background:#fff;padding:12px 25px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;gap:15px}
+    .search-box{flex:1;max-width:420px}
+    .search-box input{width:100%;padding:9px 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:.9rem}
+    .content{flex:1;padding:20px 25px;overflow-y:auto}
+    .card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:18px}
+    h3{margin-bottom:12px;color:#1e293b;font-size:1.05rem}
+    table{width:100%;border-collapse:collapse;font-size:.85rem}
+    th,td{padding:9px 10px;text-align:left;border-bottom:1px solid #e2e8f0}
+    th{background:#f8fafc;color:#64748b;font-weight:600}
+    .btn{padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-size:.82rem;font-weight:500;margin:2px;display:inline-flex;align-items:center;gap:4px}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-success{background:var(--success);color:#fff}
+    .btn-danger{background:var(--danger);color:#fff}
+    .btn-secondary{background:#64748b;color:#fff}
+    .btn-warning{background:var(--warning);color:#fff}
+    input,select,textarea{width:100%;padding:8px 11px;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:10px;font-size:.88rem}
+    textarea{min-height:70px;resize:vertical}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .section{display:none}
+    .section.active{display:block}
+    .print-area{display:none}
+    .badge{padding:3px 8px;border-radius:12px;font-size:.75rem;font-weight:600}
+    .badge-ok{background:#dcfce7;color:#166534}
+    .badge-low{background:#fef3c7;color:#92400e}
+    .badge-out{background:#fee2e2;color:#991b1b}
+    #resultados-busqueda{display:none;margin-bottom:20px}
+    .dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
+    .stat-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);text-align:center}
+    .stat-card .value{font-size:1.8rem;font-weight:700;color:var(--primary);margin:8px 0}
+    .stat-card .label{font-size:.85rem;color:#64748b}
+    .stat-card.green .value{color:var(--success)}
+    .stat-card.red .value{color:var(--danger)}
+    .stat-card.orange .value{color:var(--warning)}
+    .items-table{margin:12px 0}
+    .items-table th,.items-table td{font-size:.82rem}
+    .low-stock-list{max-height:200px;overflow-y:auto}
+    .low-stock-list li{padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:.85rem}
+    .export-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    @media print{
+      body *{visibility:hidden}
+      .print-area,.print-area *{visibility:visible}
+      .print-area{display:block;position:absolute;left:0;top:0;width:100%}
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-    body { display: flex; height: 100vh; background: var(--bg); }
-    .sidebar {
-      width: 260px; background: var(--sidebar); color: white;
-      display: flex; flex-direction: column; padding: 20px 0;
-    }
-    .logo-box { text-align: center; padding: 10px 20px 25px; border-bottom: 1px solid #334155; }
-    .logo-box img { width: 90px; height: 90px; border-radius: 50%; background: white; padding: 4px; }
-    .logo-box h2 { font-size: 1.1rem; margin-top: 8px; letter-spacing: 1px; }
-    .logo-box p { font-size: 0.7rem; color: #94a3b8; }
-    .nav-btn {
-      padding: 14px 25px; color: #cbd5e1; cursor: pointer; border: none;
-      background: none; text-align: left; font-size: 0.95rem; transition: 0.2s;
-    }
-    .nav-btn:hover, .nav-btn.active { background: #1e293b; color: white; }
-    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .header {
-      background: white; padding: 18px 30px; border-bottom: 1px solid #e2e8f0;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .content { flex: 1; padding: 25px 30px; overflow-y: auto; }
-    .card {
-      background: white; border-radius: 12px; padding: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 20px;
-    }
-    h3 { margin-bottom: 15px; color: #1e293b; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-    th { background: #f8fafc; color: #64748b; font-weight: 600; }
-    .btn {
-      padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer;
-      font-size: 0.85rem; font-weight: 500;
-    }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-success { background: #16a34a; color: white; }
-    .btn-danger { background: #dc2626; color: white; }
-    .btn-secondary { background: #64748b; color: white; }
-    input, select, textarea {
-      width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1;
-      border-radius: 6px; margin-bottom: 12px; font-size: 0.9rem;
-    }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .section { display: none; }
-    .section.active { display: block; }
-    .print-area { display: none; }
-    @media print {
-      body * { visibility: hidden; }
-      .print-area, .print-area * { visibility: visible; }
-      .print-area { display: block; position: absolute; left: 0; top: 0; width: 100%; }
+    @media (max-width:768px){
+      .sidebar{width:60px}
+      .logo-box h2,.logo-box p,.nav-btn{font-size:0;padding:12px}
+      .nav-btn::before{font-size:1.2rem}
+      .form-grid,.form-grid-3{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div class="logo-box">
-      <img src="logo.jpg" alt="Graphitech">
-      <h2>GRAPHITECH</h2>
-      <p>Administración</p>
+  <div id="app" style="display:flex;width:100%;height:100%">
+    <div class="sidebar">
+      <div class="logo-box">
+        <img src="logo.jpg" alt="Graphitech">
+        <h2>GRAPHITECH</h2>
+        <p>Administración</p>
+      </div>
+      <button class="nav-btn active" onclick="showSection('dashboard',this)">📊 Dashboard</button>
+      <button class="nav-btn" onclick="showSection('inventario',this)">📦 Inventario</button>
+      <button class="nav-btn" onclick="showSection('clientes',this)">👤 Clientes</button>
+      <button class="nav-btn" onclick="showSection('proveedores',this)">🏭 Proveedores</button>
+      <button class="nav-btn" onclick="showSection('compras',this)">🛒 Compras</button>
+      <button class="nav-btn" onclick="showSection('cotizaciones',this)">📋 Cotizaciones</button>
+      <button class="nav-btn" onclick="showSection('facturas',this)">🧾 Facturas</button>
+      <button class="nav-btn" onclick="showSection('gastos',this)">💰 Gastos</button>
+      <button class="nav-btn" onclick="showSection('movimientos',this)">📜 Movimientos</button>
     </div>
-    <button class="nav-btn active" onclick="showSection('inventario')">Inventario</button>
-    <button class="nav-btn" onclick="showSection('ventas')">Ventas</button>
-    <button class="nav-btn" onclick="showSection('compras')">Compras</button>
-    <button class="nav-btn" onclick="showSection('gastos')">Gastos</button>
-    <button class="nav-btn" onclick="showSection('cotizaciones')">Cotizaciones</button>
-    <button class="nav-btn" onclick="showSection('facturas')">Facturas</button>
+
+    <div class="main">
+      <div class="header">
+        <h2 id="section-title">Dashboard</h2>
+        <div class="search-box">
+          <input type="text" id="busqueda-global" placeholder="🔍 Buscar cliente, proveedor, producto, factura..." oninput="busquedaGlobal()">
+        </div>
+        <span id="fecha"></span>
+      </div>
+
+      <div class="content">
+        <!-- RESULTADOS DE BÚSQUEDA -->
+        <div id="resultados-busqueda" class="card">
+          <h3>Resultados de búsqueda</h3>
+          <div id="lista-resultados"></div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="section active">
+          <div class="dashboard-grid">
+            <div class="stat-card green">
+              <div class="label">Ventas de hoy</div>
+              <div class="value" id="dash-ventas-hoy">$0.00</div>
+              <div class="label" id="dash-num-facturas">0 facturas</div>
+            </div>
+            <div class="stat-card red">
+              <div class="label">Gastos de hoy</div>
+              <div class="value" id="dash-gastos-hoy">$0.00</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Balance del día</div>
+              <div class="value" id="dash-balance">$0.00</div>
+            </div>
+            <div class="stat-card orange">
+              <div class="label">Productos stock bajo</div>
+              <div class="value" id="dash-stock-bajo">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Total productos</div>
+              <div class="value" id="dash-total-prod">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Clientes registrados</div>
+              <div class="value" id="dash-total-cli">0</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>⚠️ Productos con stock bajo (≤ 5)</h3>
+            <ul class="low-stock-list" id="lista-stock-bajo"></ul>
+          </div>
+          <div class="card">
+            <h3>Últimas facturas</h3>
+            <table>
+              <thead><tr><th>Nº</th><th>Fecha</th><th>Cliente</th><th>Total</th></tr></thead>
+              <tbody id="dash-ultimas-facturas"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- INVENTARIO -->
+        <div id="inventario" class="section">
+          <div class="card">
+            <h3>Agregar / Actualizar Producto</h3>
+            <div class="form-grid">
+              <input type="text" id="prod-nombre" placeholder="Nombre del producto">
+              <div>
+                <select id="prod-categoria">
+                  <option value="">Seleccionar categoría</option>
+                </select>
+                <div style="display:flex;gap:6px;margin-top:6px">
+                  <input type="text" id="nueva-categoria" placeholder="Nueva categoría..." style="margin-bottom:0">
+                  <button type="button" class="btn btn-secondary" onclick="agregarCategoria()" style="margin:0;white-space:nowrap">+ Agregar</button>
+                </div>
+              </div>
+              <input type="number" id="prod-precio" placeholder="Precio de venta $" step="0.01">
+              <input type="number" id="prod-costo" placeholder="Costo unitario $" step="0.01">
+              <input type="number" id="prod-stock" placeholder="Stock actual">
+            </div>
+            <button class="btn btn-primary" onclick="guardarProducto()">Guardar Producto</button>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <h3 style="margin:0">Inventario en tiempo real</h3>
+              <button class="btn btn-secondary" onclick="exportarCSV('inventario')">⬇ Exportar CSV</button>
+            </div>
+            <table>
+              <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Costo</th><th>Stock</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="tabla-inventario"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- CLIENTES -->
+        <div id="clientes" class="section">
+          <div class="card">
+            <h3>Nuevo Cliente</h3>
+            <div class="form-grid">
+              <input type="text" id="cli-nombre" placeholder="Nombre completo">
+              <input type="text" id="cli-telefono" placeholder="Teléfono / WhatsApp">
+              <input type="text" id="cli-email" placeholder="Email (opcional)">
+              <input type="text" id="cli-direccion" placeholder="Dirección (opcional)">
+            </div>
+            <button class="btn btn-primary" onclick="guardarCliente()">Guardar Cliente</button>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <h3 style="margin:0">Clientes registrados</h3>
+              <button class="btn btn-secondary" onclick="exportarCSV('clientes')">⬇ Exportar CSV</button>
+            </div>
+            <table>
+              <thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th></th></tr></thead>
+              <tbody id="tabla-clientes"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PROVEEDORES -->
+        <div id="proveedores" class="section">
+          <div class="card">
+            <h3>Nuevo Proveedor</h3>
+            <div class="form-grid">
+              <input type="text" id="prov-nombre" placeholder="Nombre del proveedor">
+              <input type="text" id="prov-telefono" placeholder="Teléfono">
+              <input type="text" id="prov-contacto" placeholder="Persona de contacto">
+            </div>
+            <button class="btn btn-primary" onclick="guardarProveedor()">Guardar Proveedor</button>
+          </div>
+          <div class="card">
+            <h3>Proveedores</h3>
+            <table>
+              <thead><tr><th>Nombre</th><th>Teléfono</th><th>Contacto</th><th></th></tr></thead>
+              <tbody id="tabla-proveedores"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- COMPRAS -->
+        <div id="compras" class="section">
+          <div class="card">
+            <h3>Nueva Compra (aumenta stock)</h3>
+            <div class="form-grid">
+              <select id="compra-proveedor"><option value="">Seleccionar proveedor</option></select>
+              <select id="compra-producto" onchange="cargarCostoCompra()"><option value="">Seleccionar producto</option></select>
+              <input type="number" id="compra-cantidad" placeholder="Cantidad comprada" oninput="calcularCostoCompra()">
+              <input type="number" id="compra-costo-unit" placeholder="Costo unitario $" step="0.01" oninput="calcularCostoCompra()">
+              <input type="number" id="compra-costo" placeholder="Costo total $" step="0.01" readonly>
+            </div>
+            <button class="btn btn-success" onclick="registrarCompra()">Registrar Compra</button>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <h3 style="margin:0">Historial de Compras</h3>
+              <button class="btn btn-secondary" onclick="exportarCSV('compras')">⬇ Exportar CSV</button>
+            </div>
+            <table>
+              <thead><tr><th>Fecha</th><th>Proveedor</th><th>Producto</th><th>Cantidad</th><th>Costo</th></tr></thead>
+              <tbody id="tabla-compras"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- COTIZACIONES -->
+        <div id="cotizaciones" class="section">
+          <div class="card">
+            <h3>Nueva Cotización (no descuenta stock)</h3>
+            <div class="form-grid">
+              <select id="cot-cliente"><option value="">Seleccionar cliente</option></select>
+            </div>
+            <div class="form-grid-3">
+              <select id="cot-producto" onchange="cargarPrecioItem('cot')"><option value="">Producto</option></select>
+              <input type="number" id="cot-cantidad" placeholder="Cantidad" min="1" value="1">
+              <input type="number" id="cot-precio" placeholder="Precio unit." step="0.01">
+            </div>
+            <button class="btn btn-primary" onclick="agregarItem('cot')">+ Agregar producto</button>
+            <table class="items-table">
+              <thead><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Subtotal</th><th></th></tr></thead>
+              <tbody id="cot-items"></tbody>
+            </table>
+            <p style="text-align:right;font-weight:600;margin:8px 0">Total: $<span id="cot-total-display">0.00</span></p>
+            <textarea id="cot-notas" placeholder="Notas / Observaciones (opcional)"></textarea>
+            <button class="btn btn-primary" onclick="generarCotizacion()">Generar Cotización</button>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <h3 style="margin:0">Cotizaciones</h3>
+              <button class="btn btn-secondary" onclick="exportarCSV('cotizaciones')">⬇ Exportar CSV</button>
+            </div>
+            <table>
+              <thead><tr><th>Nº</th><th>Fecha</th><th>Cliente</th><th>Items</th><th>Total</th><th></th></tr></thead>
+              <tbody id="tabla-cotizaciones"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- FACTURAS -->
+        <div id="facturas" class="section">
+          <div class="card">
+            <h3>Nueva Factura (descuenta stock)</h3>
+            <div class="form-grid">
+              <select id="fac-cliente"><option value="">Seleccionar cliente</option></select>
+            </div>
+            <div class="form-grid-3">
+              <select id="fac-producto" onchange="cargarPrecioItem('fac')"><option value="">Producto</option></select>
+              <input type="number" id="fac-cantidad" placeholder="Cantidad" min="1" value="1">
+              <input type="number" id="fac-precio" placeholder="Precio unit." step="0.01">
+            </div>
+            <button class="btn btn-primary" onclick="agregarItem('fac')">+ Agregar producto</button>
+            <table class="items-table">
+              <thead><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Subtotal</th><th></th></tr></thead>
+              <tbody id="fac-items"></tbody>
+            </table>
+            <p style="text-align:right;font-weight:600;margin:8px 0">Total: $<span id="fac-total-display">0.00</span></p>
+            <textarea id="fac-notas" placeholder="Notas / Observaciones (opcional)"></textarea>
+            <button class="btn btn-success" onclick="generarFactura()">Generar Factura</button>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <h3 style="margin:0">Facturas</h3>
+              <button class="btn btn-secondary" onclick="exportarCSV('facturas')">⬇ Exportar CSV</button>
+            </div>
+            <table>
+              <thead><tr><th>Nº</th><th>Fecha</th><th>Cliente</th><th>Items</th><th>Total</th><th></th></tr></thead>
+              <tbody id="tabla-facturas"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- GASTOS -->
+        <div id="gastos" class="section">
+          <div class="card">
+            <h3>Nuevo Gasto</h3>
+            <div class="form-grid">
+              <input type="text" id="gasto-descripcion" placeholder="Descripción">
+              <input type="number" id="gasto-monto" placeholder="Monto $" step="0.01">
+            </div>
+            <button class="btn btn-danger" onclick="agregarGasto()">Registrar Gasto</button>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <h3 style="margin:0">Historial de Gastos</h3>
+              <button class="btn btn-secondary" onclick="exportarCSV('gastos')">⬇ Exportar CSV</button>
+            </div>
+            <table>
+              <thead><tr><th>Fecha</th><th>Descripción</th><th>Monto</th></tr></thead>
+              <tbody id="tabla-gastos"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- MOVIMIENTOS DE STOCK -->
+        <div id="movimientos" class="section">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <h3 style="margin:0">Historial de movimientos de stock</h3>
+              <button class="btn btn-secondary" onclick="exportarCSV('movimientos')">⬇ Exportar CSV</button>
+            </div>
+            <table>
+              <thead><tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th>Cantidad</th><th>Stock resultante</th><th>Detalle</th></tr></thead>
+              <tbody id="tabla-movimientos"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="main">
-    <div class="header">
-      <h2 id="section-title">Inventario</h2>
-      <span id="fecha"></span>
-    </div>
-    <div class="content">
-
-      <!-- INVENTARIO -->
-      <div id="inventario" class="section active">
-        <div class="card">
-          <h3>Agregar Producto</h3>
-          <div class="form-grid">
-            <input type="text" id="prod-nombre" placeholder="Nombre del producto">
-            <input type="number" id="prod-precio" placeholder="Precio" step="0.01">
-            <input type="number" id="prod-stock" placeholder="Stock">
-            <input type="text" id="prod-categoria" placeholder="Categoría (Camisetas, Gorras...)">
-          </div>
-          <button class="btn btn-primary" onclick="agregarProducto()">Guardar Producto</button>
-        </div>
-        <div class="card">
-          <h3>Lista de Productos</h3>
-          <table>
-            <thead><tr><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr></thead>
-            <tbody id="tabla-inventario"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- VENTAS -->
-      <div id="ventas" class="section">
-        <div class="card">
-          <h3>Nueva Venta</h3>
-          <div class="form-grid">
-            <input type="text" id="venta-cliente" placeholder="Cliente">
-            <input type="text" id="venta-producto" placeholder="Producto">
-            <input type="number" id="venta-cantidad" placeholder="Cantidad">
-            <input type="number" id="venta-total" placeholder="Total $" step="0.01">
-          </div>
-          <button class="btn btn-success" onclick="agregarVenta()">Registrar Venta</button>
-        </div>
-        <div class="card">
-          <h3>Historial de Ventas</h3>
-          <table>
-            <thead><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cantidad</th><th>Total</th></tr></thead>
-            <tbody id="tabla-ventas"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- COMPRAS -->
-      <div id="compras" class="section">
-        <div class="card">
-          <h3>Nueva Compra</h3>
-          <div class="form-grid">
-            <input type="text" id="compra-proveedor" placeholder="Proveedor">
-            <input type="text" id="compra-descripcion" placeholder="Descripción">
-            <input type="number" id="compra-monto" placeholder="Monto $" step="0.01">
-          </div>
-          <button class="btn btn-primary" onclick="agregarCompra()">Registrar Compra</button>
-        </div>
-        <div class="card">
-          <h3>Historial de Compras</h3>
-          <table>
-            <thead><tr><th>Fecha</th><th>Proveedor</th><th>Descripción</th><th>Monto</th></tr></thead>
-            <tbody id="tabla-compras"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- GASTOS -->
-      <div id="gastos" class="section">
-        <div class="card">
-          <h3>Nuevo Gasto</h3>
-          <div class="form-grid">
-            <input type="text" id="gasto-descripcion" placeholder="Descripción del gasto">
-            <input type="number" id="gasto-monto" placeholder="Monto $" step="0.01">
-          </div>
-          <button class="btn btn-danger" onclick="agregarGasto()">Registrar Gasto</button>
-        </div>
-        <div class="card">
-          <h3>Historial de Gastos</h3>
-          <table>
-            <thead><tr><th>Fecha</th><th>Descripción</th><th>Monto</th></tr></thead>
-            <tbody id="tabla-gastos"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- COTIZACIONES -->
-      <div id="cotizaciones" class="section">
-        <div class="card">
-          <h3>Nueva Cotización</h3>
-          <div class="form-grid">
-            <input type="text" id="cot-cliente" placeholder="Cliente">
-            <input type="text" id="cot-producto" placeholder="Producto / Servicio">
-            <input type="number" id="cot-cantidad" placeholder="Cantidad">
-            <input type="number" id="cot-precio" placeholder="Precio unitario" step="0.01">
-          </div>
-          <button class="btn btn-primary" onclick="generarCotizacion()">Generar Cotización</button>
-        </div>
-        <div class="card">
-          <h3>Cotizaciones</h3>
-          <table>
-            <thead><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Total</th><th>Acciones</th></tr></thead>
-            <tbody id="tabla-cotizaciones"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- FACTURAS -->
-      <div id="facturas" class="section">
-        <div class="card">
-          <h3>Nueva Factura</h3>
-          <div class="form-grid">
-            <input type="text" id="fac-cliente" placeholder="Cliente">
-            <input type="text" id="fac-producto" placeholder="Producto / Servicio">
-            <input type="number" id="fac-cantidad" placeholder="Cantidad">
-            <input type="number" id="fac-precio" placeholder="Precio unitario" step="0.01">
-          </div>
-          <button class="btn btn-success" onclick="generarFactura()">Generar Factura</button>
-        </div>
-        <div class="card">
-          <h3>Facturas</h3>
-          <table>
-            <thead><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Total</th><th>Acciones</th></tr></thead>
-            <tbody id="tabla-facturas"></tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ÁREA DE IMPRESIÓN -->
   <div class="print-area" id="print-area"></div>
 
   <script>
-    // ===== FIREBASE CONFIG =====
     const firebaseConfig = {
       apiKey: "AIzaSyC60gsrqYB9LLmPph2Swb9jlSNJ5KEayM8",
       authDomain: "graphitech507.firebaseapp.com",
@@ -230,81 +370,323 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ===== NAVEGACIÓN =====
-    function showSection(id) {
+    let productos = {}, clientes = {}, proveedores = {}, facturas = {}, cotizaciones = {};
+    let itemsCot = [], itemsFac = [];
+
+    // Fecha y eventos iniciales
+    document.getElementById('fecha').textContent = new Date().toLocaleDateString('es-PA');
+
+    // Permitir Enter para agregar categoría
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputCat = document.getElementById('nueva-categoria');
+      if (inputCat) {
+        inputCat.addEventListener('keydown', e => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            agregarCategoria();
+          }
+        });
+      }
+    });
+
+    function showSection(id, btn) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-      event.target.classList.add('active');
-      document.getElementById('section-title').textContent = event.target.textContent;
+      if (btn) btn.classList.add('active');
+      document.getElementById('section-title').textContent = btn ? btn.textContent.replace(/^[^\s]+\s/, '') : id;
+      document.getElementById('resultados-busqueda').style.display = 'none';
+      document.getElementById('busqueda-global').value = '';
+      if (id === 'dashboard') actualizarDashboard();
     }
 
-    document.getElementById('fecha').textContent = new Date().toLocaleDateString('es-PA');
+    // ========== BÚSQUEDA GLOBAL ==========
+    function busquedaGlobal() {
+      const q = document.getElementById('busqueda-global').value.toLowerCase().trim();
+      const cont = document.getElementById('resultados-busqueda');
+      const lista = document.getElementById('lista-resultados');
+      if (!q) { cont.style.display = 'none'; return; }
+      let html = '';
+      Object.values(productos).forEach(p => {
+        if (p.nombre.toLowerCase().includes(q) || (p.categoria||'').toLowerCase().includes(q)) {
+          html += `<p>📦 <strong>Producto:</strong> ${p.nombre} | Stock: ${p.stock} | $${parseFloat(p.precio).toFixed(2)}</p>`;
+        }
+      });
+      Object.values(clientes).forEach(c => {
+        if (c.nombre.toLowerCase().includes(q) || (c.telefono||'').includes(q)) {
+          html += `<p>👤 <strong>Cliente:</strong> ${c.nombre} | ${c.telefono||''}</p>`;
+        }
+      });
+      Object.values(proveedores).forEach(p => {
+        if (p.nombre.toLowerCase().includes(q) || (p.telefono||'').includes(q)) {
+          html += `<p>🏭 <strong>Proveedor:</strong> ${p.nombre} | ${p.telefono||''}</p>`;
+        }
+      });
+      Object.values(facturas).forEach(f => {
+        if ((f.numero||'').toLowerCase().includes(q) || (f.cliente||'').toLowerCase().includes(q)) {
+          html += `<p>🧾 <strong>Factura ${f.numero}:</strong> ${f.cliente} - $${parseFloat(f.total).toFixed(2)}</p>`;
+        }
+      });
+      Object.values(cotizaciones).forEach(c => {
+        if ((c.numero||'').toLowerCase().includes(q) || (c.cliente||'').toLowerCase().includes(q)) {
+          html += `<p>📋 <strong>Cotización ${c.numero}:</strong> ${c.cliente} - $${parseFloat(c.total).toFixed(2)}</p>`;
+        }
+      });
+      lista.innerHTML = html || '<p>No se encontraron resultados</p>';
+      cont.style.display = 'block';
+    }
 
-    // ===== INVENTARIO =====
-    function agregarProducto() {
-      const nombre = document.getElementById('prod-nombre').value;
-      const precio = document.getElementById('prod-precio').value;
-      const stock = document.getElementById('prod-stock').value;
-      const categoria = document.getElementById('prod-categoria').value;
-      if (!nombre) return alert('Escribe el nombre');
-      db.ref('inventario').push({ nombre, precio, stock, categoria });
+    // ========== DASHBOARD ==========
+    function actualizarDashboard() {
+      const hoy = new Date().toLocaleDateString('es-PA');
+      let ventasHoy = 0, numFac = 0, gastosHoy = 0;
+      Object.values(facturas).forEach(f => {
+        if ((f.fecha||'').startsWith(hoy) || (f.fecha||'').includes(hoy.split('/').reverse().join('-'))) {
+          // Flexible date match
+        }
+        const fFecha = (f.fecha || '').split(',')[0].trim();
+        if (fFecha === hoy || f.fecha?.includes(new Date().toLocaleDateString('es-PA'))) {
+          ventasHoy += parseFloat(f.total) || 0;
+          numFac++;
+        }
+      });
+      // Better: parse dates more carefully
+      ventasHoy = 0; numFac = 0;
+      const todayStr = new Date().toDateString();
+      Object.values(facturas).forEach(f => {
+        try {
+          const d = new Date(f.fecha);
+          if (d.toDateString() === todayStr) {
+            ventasHoy += parseFloat(f.total) || 0;
+            numFac++;
+          }
+        } catch(e) {
+          if ((f.fecha||'').includes(new Date().toLocaleDateString('es-PA'))) {
+            ventasHoy += parseFloat(f.total) || 0;
+            numFac++;
+          }
+        }
+      });
+      Object.values(gastosData || {}).forEach(g => {
+        try {
+          const d = new Date(g.fecha);
+          if (d.toDateString() === todayStr) gastosHoy += parseFloat(g.monto) || 0;
+        } catch(e) {
+          if ((g.fecha||'').includes(new Date().toLocaleDateString('es-PA'))) gastosHoy += parseFloat(g.monto) || 0;
+        }
+      });
+
+      document.getElementById('dash-ventas-hoy').textContent = '$' + ventasHoy.toFixed(2);
+      document.getElementById('dash-num-facturas').textContent = numFac + ' facturas';
+      document.getElementById('dash-gastos-hoy').textContent = '$' + gastosHoy.toFixed(2);
+      document.getElementById('dash-balance').textContent = '$' + (ventasHoy - gastosHoy).toFixed(2);
+      document.getElementById('dash-total-prod').textContent = Object.keys(productos).length;
+      document.getElementById('dash-total-cli').textContent = Object.keys(clientes).length;
+
+      let bajos = 0;
+      let listaBajos = '';
+      Object.values(productos).forEach(p => {
+        if (parseInt(p.stock) <= 5) {
+          bajos++;
+          listaBajos += `<li><strong>${p.nombre}</strong> — Stock: ${p.stock} ${parseInt(p.stock)===0?'<span class="badge badge-out">Agotado</span>':'<span class="badge badge-low">Bajo</span>'}</li>`;
+        }
+      });
+      document.getElementById('dash-stock-bajo').textContent = bajos;
+      document.getElementById('lista-stock-bajo').innerHTML = listaBajos || '<li>Ningún producto con stock bajo 🎉</li>';
+
+      // Últimas facturas
+      const tbody = document.getElementById('dash-ultimas-facturas');
+      const sorted = Object.values(facturas).sort((a,b) => (b.fecha||'').localeCompare(a.fecha||'')).slice(0,8);
+      tbody.innerHTML = sorted.map(f => `<tr><td>${f.numero||'-'}</td><td>${f.fecha}</td><td>${f.cliente}</td><td>$${parseFloat(f.total).toFixed(2)}</td></tr>`).join('') || '<tr><td colspan="4">Sin facturas</td></tr>';
+    }
+
+    let gastosData = {};
+
+    // ========== INVENTARIO ==========
+    let categorias = new Set();
+
+    function actualizarSelectCategorias() {
+      const select = document.getElementById('prod-categoria');
+      const valorActual = select.value;
+      select.innerHTML = '<option value="">Seleccionar categoría</option>';
+      // Ordenar alfabéticamente
+      const lista = Array.from(categorias).filter(c => c && c.trim()).sort((a,b) => a.localeCompare(b));
+      lista.forEach(cat => {
+        select.innerHTML += `<option value="${cat}">${cat}</option>`;
+      });
+      // Mantener selección si todavía existe
+      if (valorActual && categorias.has(valorActual)) {
+        select.value = valorActual;
+      }
+    }
+
+    function agregarCategoria() {
+      const input = document.getElementById('nueva-categoria');
+      const nombre = input.value.trim();
+      if (!nombre) return alert('Escribe el nombre de la categoría');
+      // Capitalizar primera letra
+      const cat = nombre.charAt(0).toUpperCase() + nombre.slice(1);
+      categorias.add(cat);
+      actualizarSelectCategorias();
+      document.getElementById('prod-categoria').value = cat;
+      input.value = '';
+    }
+
+    function guardarProducto() {
+      const nombre = document.getElementById('prod-nombre').value.trim();
+      const categoria = document.getElementById('prod-categoria').value.trim();
+      const precio = parseFloat(document.getElementById('prod-precio').value) || 0;
+      const costo = parseFloat(document.getElementById('prod-costo').value) || 0;
+      const stock = parseInt(document.getElementById('prod-stock').value) || 0;
+      if (!nombre) return alert('Escribe el nombre del producto');
+      if (!categoria) return alert('Selecciona o crea una categoría');
+      db.ref('inventario').push({ nombre, categoria, precio, costo, stock });
+      registrarMovimiento('Entrada inicial', nombre, stock, stock, 'Producto nuevo');
       document.getElementById('prod-nombre').value = '';
       document.getElementById('prod-precio').value = '';
+      document.getElementById('prod-costo').value = '';
       document.getElementById('prod-stock').value = '';
-      document.getElementById('prod-categoria').value = '';
+      // Dejamos la categoría seleccionada para facilitar agregar varios del mismo tipo
     }
 
     db.ref('inventario').on('value', snap => {
+      productos = {};
+      categorias = new Set();
       const tbody = document.getElementById('tabla-inventario');
+      const selects = ['compra-producto','cot-producto','fac-producto'];
       tbody.innerHTML = '';
+      selects.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<option value="">Seleccionar producto</option>';
+      });
       snap.forEach(child => {
         const p = child.val();
+        productos[child.key] = { ...p, id: child.key };
+        if (p.categoria) categorias.add(p.categoria);
+        let estado = p.stock > 5 ? '<span class="badge badge-ok">Disponible</span>' :
+                     p.stock > 0 ? '<span class="badge badge-low">Bajo</span>' :
+                     '<span class="badge badge-out">Agotado</span>';
         tbody.innerHTML += `<tr>
-          <td>${p.nombre}</td><td>${p.categoria||''}</td>
-          <td>$${parseFloat(p.precio).toFixed(2)}</td><td>${p.stock}</td>
-          <td><button class="btn btn-danger" onclick="db.ref('inventario/${child.key}').remove()">Eliminar</button></td>
+          <td>${p.nombre}</td><td>${p.categoria||'-'}</td>
+          <td>$${parseFloat(p.precio||0).toFixed(2)}</td>
+          <td>$${parseFloat(p.costo||0).toFixed(2)}</td>
+          <td>${p.stock}</td><td>${estado}</td>
+          <td><button class="btn btn-danger" onclick="eliminarProducto('${child.key}','${p.nombre}')">X</button></td>
         </tr>`;
+        const opt = `<option value="${child.key}">${p.nombre} (Stock: ${p.stock})</option>`;
+        selects.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerHTML += opt;
+        });
       });
+      actualizarSelectCategorias();
+      actualizarDashboard();
     });
 
-    // ===== VENTAS =====
-    function agregarVenta() {
-      const cliente = document.getElementById('venta-cliente').value;
-      const producto = document.getElementById('venta-producto').value;
-      const cantidad = document.getElementById('venta-cantidad').value;
-      const total = document.getElementById('venta-total').value;
-      if (!cliente || !producto) return alert('Completa los datos');
-      db.ref('ventas').push({
-        fecha: new Date().toLocaleString('es-PA'),
-        cliente, producto, cantidad, total
-      });
-      ['venta-cliente','venta-producto','venta-cantidad','venta-total'].forEach(id => document.getElementById(id).value = '');
+    function eliminarProducto(id, nombre) {
+      if (!confirm('¿Eliminar producto ' + nombre + '?')) return;
+      db.ref('inventario/' + id).remove();
+      registrarMovimiento('Eliminación', nombre, 0, 0, 'Producto eliminado');
     }
 
-    db.ref('ventas').on('value', snap => {
-      const tbody = document.getElementById('tabla-ventas');
+    // ========== CLIENTES ==========
+    function guardarCliente() {
+      const nombre = document.getElementById('cli-nombre').value.trim();
+      const telefono = document.getElementById('cli-telefono').value.trim();
+      const email = document.getElementById('cli-email').value.trim();
+      const direccion = document.getElementById('cli-direccion').value.trim();
+      if (!nombre) return alert('Escribe el nombre');
+      db.ref('clientes').push({ nombre, telefono, email, direccion });
+      ['cli-nombre','cli-telefono','cli-email','cli-direccion'].forEach(id => document.getElementById(id).value = '');
+    }
+
+    db.ref('clientes').on('value', snap => {
+      clientes = {};
+      const tbody = document.getElementById('tabla-clientes');
+      const selects = ['cot-cliente','fac-cliente'];
       tbody.innerHTML = '';
+      selects.forEach(id => document.getElementById(id).innerHTML = '<option value="">Seleccionar cliente</option>');
       snap.forEach(child => {
-        const v = child.val();
+        const c = child.val();
+        clientes[child.key] = { ...c, id: child.key };
         tbody.innerHTML += `<tr>
-          <td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td>
-          <td>${v.cantidad}</td><td>$${parseFloat(v.total).toFixed(2)}</td>
+          <td>${c.nombre}</td><td>${c.telefono||'-'}</td><td>${c.email||'-'}</td>
+          <td><button class="btn btn-danger" onclick="db.ref('clientes/${child.key}').remove()">X</button></td>
         </tr>`;
+        const opt = `<option value="${child.key}">${c.nombre} ${c.telefono ? '- '+c.telefono : ''}</option>`;
+        selects.forEach(id => document.getElementById(id).innerHTML += opt);
+      });
+      actualizarDashboard();
+    });
+
+    // ========== PROVEEDORES ==========
+    function guardarProveedor() {
+      const nombre = document.getElementById('prov-nombre').value.trim();
+      const telefono = document.getElementById('prov-telefono').value.trim();
+      const contacto = document.getElementById('prov-contacto').value.trim();
+      if (!nombre) return alert('Escribe el nombre');
+      db.ref('proveedores').push({ nombre, telefono, contacto });
+      ['prov-nombre','prov-telefono','prov-contacto'].forEach(id => document.getElementById(id).value = '');
+    }
+
+    db.ref('proveedores').on('value', snap => {
+      proveedores = {};
+      const tbody = document.getElementById('tabla-proveedores');
+      const select = document.getElementById('compra-proveedor');
+      tbody.innerHTML = '';
+      select.innerHTML = '<option value="">Seleccionar proveedor</option>';
+      snap.forEach(child => {
+        const p = child.val();
+        proveedores[child.key] = { ...p, id: child.key };
+        tbody.innerHTML += `<tr>
+          <td>${p.nombre}</td><td>${p.telefono||'-'}</td><td>${p.contacto||'-'}</td>
+          <td><button class="btn btn-danger" onclick="db.ref('proveedores/${child.key}').remove()">X</button></td>
+        </tr>`;
+        select.innerHTML += `<option value="${child.key}">${p.nombre}</option>`;
       });
     });
 
-    // ===== COMPRAS =====
-    function agregarCompra() {
-      const proveedor = document.getElementById('compra-proveedor').value;
-      const descripcion = document.getElementById('compra-descripcion').value;
-      const monto = document.getElementById('compra-monto').value;
-      if (!proveedor) return alert('Escribe el proveedor');
+    // ========== COMPRAS (precio automático) ==========
+    function cargarCostoCompra() {
+      const prodId = document.getElementById('compra-producto').value;
+      if (prodId && productos[prodId]) {
+        document.getElementById('compra-costo-unit').value = productos[prodId].costo || productos[prodId].precio || 0;
+        calcularCostoCompra();
+      }
+    }
+    function calcularCostoCompra() {
+      const cant = parseFloat(document.getElementById('compra-cantidad').value) || 0;
+      const unit = parseFloat(document.getElementById('compra-costo-unit').value) || 0;
+      document.getElementById('compra-costo').value = (cant * unit).toFixed(2);
+    }
+
+    function registrarCompra() {
+      const provId = document.getElementById('compra-proveedor').value;
+      const prodId = document.getElementById('compra-producto').value;
+      const cantidad = parseInt(document.getElementById('compra-cantidad').value) || 0;
+      const costo = parseFloat(document.getElementById('compra-costo').value) || 0;
+      if (!provId || !prodId || cantidad <= 0) return alert('Completa los datos');
+
+      const prod = productos[prodId];
+      const nuevoStock = (parseInt(prod.stock) || 0) + cantidad;
+      db.ref('inventario/' + prodId).update({ stock: nuevoStock });
+      // Actualizar costo promedio simple
+      if (costo > 0) {
+        const unit = costo / cantidad;
+        db.ref('inventario/' + prodId).update({ costo: unit });
+      }
       db.ref('compras').push({
         fecha: new Date().toLocaleString('es-PA'),
-        proveedor, descripcion, monto
+        proveedor: proveedores[provId].nombre,
+        producto: prod.nombre,
+        productoId: prodId,
+        cantidad, costo
       });
-      ['compra-proveedor','compra-descripcion','compra-monto'].forEach(id => document.getElementById(id).value = '');
+      registrarMovimiento('Compra', prod.nombre, cantidad, nuevoStock, 'Proveedor: ' + proveedores[provId].nombre);
+      document.getElementById('compra-cantidad').value = '';
+      document.getElementById('compra-costo-unit').value = '';
+      document.getElementById('compra-costo').value = '';
+      alert('Compra registrada. Stock actualizado.');
     }
 
     db.ref('compras').on('value', snap => {
@@ -313,128 +695,364 @@
       snap.forEach(child => {
         const c = child.val();
         tbody.innerHTML += `<tr>
-          <td>${c.fecha}</td><td>${c.proveedor}</td><td>${c.descripcion}</td>
-          <td>$${parseFloat(c.monto).toFixed(2)}</td>
+          <td>${c.fecha}</td><td>${c.proveedor}</td><td>${c.producto}</td>
+          <td>${c.cantidad}</td><td>$${parseFloat(c.costo).toFixed(2)}</td>
         </tr>`;
       });
     });
 
-    // ===== GASTOS =====
-    function agregarGasto() {
-      const descripcion = document.getElementById('gasto-descripcion').value;
-      const monto = document.getElementById('gasto-monto').value;
-      if (!descripcion) return alert('Escribe la descripción');
-      db.ref('gastos').push({
-        fecha: new Date().toLocaleString('es-PA'),
-        descripcion, monto
-      });
-      document.getElementById('gasto-descripcion').value = '';
-      document.getElementById('gasto-monto').value = '';
+    // ========== ITEMS MULTI-PRODUCTO ==========
+    function cargarPrecioItem(tipo) {
+      const prodId = document.getElementById(`${tipo}-producto`).value;
+      if (prodId && productos[prodId]) {
+        document.getElementById(`${tipo}-precio`).value = productos[prodId].precio || 0;
+      }
     }
 
-    db.ref('gastos').on('value', snap => {
-      const tbody = document.getElementById('tabla-gastos');
-      tbody.innerHTML = '';
-      snap.forEach(child => {
-        const g = child.val();
-        tbody.innerHTML += `<tr>
-          <td>${g.fecha}</td><td>${g.descripcion}</td>
-          <td>$${parseFloat(g.monto).toFixed(2)}</td>
-        </tr>`;
-      });
-    });
-
-    // ===== COTIZACIONES & FACTURAS =====
-    function generarDocumento(tipo) {
-      const prefijo = tipo === 'cotizacion' ? 'cot' : 'fac';
-      const cliente = document.getElementById(`${prefijo}-cliente`).value;
-      const producto = document.getElementById(`${prefijo}-producto`).value;
-      const cantidad = parseFloat(document.getElementById(`${prefijo}-cantidad`).value) || 1;
-      const precio = parseFloat(document.getElementById(`${prefijo}-precio`).value) || 0;
-      const total = cantidad * precio;
-      if (!cliente || !producto) return alert('Completa los datos');
-
-      const data = {
-        fecha: new Date().toLocaleString('es-PA'),
-        cliente, producto, cantidad, precio, total
+    function agregarItem(tipo) {
+      const prodId = document.getElementById(`${tipo}-producto`).value;
+      const cantidad = parseInt(document.getElementById(`${tipo}-cantidad`).value) || 0;
+      const precio = parseFloat(document.getElementById(`${tipo}-precio`).value) || 0;
+      if (!prodId || cantidad <= 0) return alert('Selecciona producto y cantidad');
+      const prod = productos[prodId];
+      if (tipo === 'fac' && parseInt(prod.stock) < cantidad) {
+        return alert(`Stock insuficiente de ${prod.nombre}.\nDisponible: ${prod.stock}`);
+      }
+      const item = {
+        productoId: prodId,
+        producto: prod.nombre,
+        cantidad,
+        precio,
+        subtotal: cantidad * precio
       };
-      db.ref(tipo === 'cotizacion' ? 'cotizaciones' : 'facturas').push(data);
-      imprimirDocumento(tipo, data);
-      [`${prefijo}-cliente`,`${prefijo}-producto`,`${prefijo}-cantidad`,`${prefijo}-precio`].forEach(id => document.getElementById(id).value = '');
+      if (tipo === 'cot') {
+        itemsCot.push(item);
+        renderItems('cot');
+      } else {
+        itemsFac.push(item);
+        renderItems('fac');
+      }
+      document.getElementById(`${tipo}-cantidad`).value = 1;
+      document.getElementById(`${tipo}-precio`).value = '';
+      document.getElementById(`${tipo}-producto`).value = '';
     }
 
-    function generarCotizacion() { generarDocumento('cotizacion'); }
-    function generarFactura() { generarDocumento('factura'); }
+    function renderItems(tipo) {
+      const items = tipo === 'cot' ? itemsCot : itemsFac;
+      const tbody = document.getElementById(`${tipo}-items`);
+      let total = 0;
+      tbody.innerHTML = items.map((it, i) => {
+        total += it.subtotal;
+        return `<tr>
+          <td>${it.producto}</td>
+          <td>${it.cantidad}</td>
+          <td>$${it.precio.toFixed(2)}</td>
+          <td>$${it.subtotal.toFixed(2)}</td>
+          <td><button class="btn btn-danger" onclick="quitarItem('${tipo}',${i})">X</button></td>
+        </tr>`;
+      }).join('');
+      document.getElementById(`${tipo}-total-display`).textContent = total.toFixed(2);
+    }
 
-    function imprimirDocumento(tipo, data) {
-      const titulo = tipo === 'cotizacion' ? 'COTIZACIÓN' : 'FACTURA';
-      const area = document.getElementById('print-area');
-      area.innerHTML = `
-        <div style="padding:40px; font-family:Arial; max-width:800px; margin:auto;">
-          <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px;">
-            <img src="logo.jpg" style="width:80px; height:80px; border-radius:50%;">
+    function quitarItem(tipo, idx) {
+      if (tipo === 'cot') { itemsCot.splice(idx,1); renderItems('cot'); }
+      else { itemsFac.splice(idx,1); renderItems('fac'); }
+    }
+
+    // ========== COTIZACIÓN ==========
+    function generarCotizacion() {
+      const cliId = document.getElementById('cot-cliente').value;
+      if (!cliId) return alert('Selecciona un cliente');
+      if (itemsCot.length === 0) return alert('Agrega al menos un producto');
+      const total = itemsCot.reduce((s,i) => s + i.subtotal, 0);
+      const notas = document.getElementById('cot-notas').value.trim();
+
+      db.ref('contadores/cotizacion').transaction(actual => (actual || 0) + 1, (error, committed, snapshot) => {
+        if (!committed) return alert('Error al generar número');
+        const numero = 'COT-' + String(snapshot.val()).padStart(4, '0');
+        const data = {
+          numero,
+          fecha: new Date().toLocaleString('es-PA'),
+          cliente: clientes[cliId].nombre,
+          telefono: clientes[cliId].telefono || '',
+          items: itemsCot,
+          total,
+          notas
+        };
+        db.ref('cotizaciones').push(data);
+        imprimirDocumento('COTIZACIÓN', data);
+        itemsCot = [];
+        renderItems('cot');
+        document.getElementById('cot-notas').value = '';
+      });
+    }
+
+    // ========== FACTURA ==========
+    function generarFactura() {
+      const cliId = document.getElementById('fac-cliente').value;
+      if (!cliId) return alert('Selecciona un cliente');
+      if (itemsFac.length === 0) return alert('Agrega al menos un producto');
+
+      // Validar stock de todos
+      for (const it of itemsFac) {
+        const prod = productos[it.productoId];
+        if (!prod || parseInt(prod.stock) < it.cantidad) {
+          return alert(`Stock insuficiente de ${it.producto}. Disponible: ${prod ? prod.stock : 0}`);
+        }
+      }
+
+      const total = itemsFac.reduce((s,i) => s + i.subtotal, 0);
+      const notas = document.getElementById('fac-notas').value.trim();
+
+      db.ref('contadores/factura').transaction(actual => (actual || 0) + 1, (error, committed, snapshot) => {
+        if (!committed) return alert('Error al generar número');
+        const numero = 'FAC-' + String(snapshot.val()).padStart(4, '0');
+
+        // Descontar stock de cada item
+        itemsFac.forEach(it => {
+          const prod = productos[it.productoId];
+          const nuevoStock = parseInt(prod.stock) - it.cantidad;
+          db.ref('inventario/' + it.productoId).update({ stock: nuevoStock });
+          registrarMovimiento('Venta (Factura)', it.producto, -it.cantidad, nuevoStock, 'Factura ' + numero);
+        });
+
+        const data = {
+          numero,
+          fecha: new Date().toLocaleString('es-PA'),
+          cliente: clientes[cliId].nombre,
+          telefono: clientes[cliId].telefono || '',
+          items: itemsFac,
+          total,
+          notas
+        };
+        db.ref('facturas').push(data);
+        imprimirDocumento('FACTURA', data);
+        itemsFac = [];
+        renderItems('fac');
+        document.getElementById('fac-notas').value = '';
+      });
+    }
+
+    function eliminarFactura(id) {
+      if (!confirm('¿Anular esta factura? El stock volverá al inventario.')) return;
+      const f = facturas[id];
+      if (!f) {
+        // Fallback: solo borrar si no encontramos los datos
+        db.ref('facturas/' + id).remove();
+        alert('Factura eliminada');
+        return;
+      }
+      let items = Array.isArray(f.items) ? f.items : [];
+      // Compatibilidad con facturas antiguas de 1 solo producto
+      if (items.length === 0 && f.productoId) {
+        items = [{ productoId: f.productoId, producto: f.producto, cantidad: f.cantidad }];
+      }
+      items.forEach(it => {
+        if (it.productoId && productos[it.productoId]) {
+          const nuevoStock = (parseInt(productos[it.productoId].stock) || 0) + parseInt(it.cantidad || 0);
+          db.ref('inventario/' + it.productoId).update({ stock: nuevoStock });
+          registrarMovimiento('Anulación factura', it.producto || 'Producto', it.cantidad || 0, nuevoStock, 'Factura ' + (f.numero || id) + ' anulada');
+        }
+      });
+      db.ref('facturas/' + id).remove();
+      alert('Factura anulada y stock restaurado');
+    }
+
+    function eliminarCotizacion(id) {
+      if (!confirm('¿Anular / eliminar esta cotización?')) return;
+      db.ref('cotizaciones/' + id).remove();
+      alert('Cotización eliminada');
+    }
+
+    function imprimirDocumento(titulo, data) {
+      const itemsHtml = (data.items || [{producto: data.producto, cantidad: data.cantidad, precio: data.precio, subtotal: data.total}]).map(it => `
+        <tr>
+          <td style="padding:10px;border:1px solid #cbd5e1">${it.producto}</td>
+          <td style="padding:10px;border:1px solid #cbd5e1;text-align:center">${it.cantidad}</td>
+          <td style="padding:10px;border:1px solid #cbd5e1">$${(it.precio||0).toFixed(2)}</td>
+          <td style="padding:10px;border:1px solid #cbd5e1">$${(it.subtotal || it.cantidad*it.precio || 0).toFixed(2)}</td>
+        </tr>`).join('');
+
+      document.getElementById('print-area').innerHTML = `
+        <div style="padding:40px;font-family:Arial;max-width:800px;margin:auto">
+          <div style="display:flex;align-items:center;gap:20px;margin-bottom:30px">
+            <img src="logo.jpg" style="width:80px;height:80px;border-radius:50%">
             <div>
-              <h1 style="margin:0; color:#1e40af;">GRAPHITECH</h1>
-              <p style="margin:0; color:#64748b;">Servicio Técnico • Impresiones</p>
-              <p style="margin:0; font-size:0.85rem;">Chanis - Frente a Farmacias Metro | WhatsApp: 6002-3188</p>
+              <h1 style="margin:0;color:#1e40af">GRAPHITECH</h1>
+              <p style="margin:0;color:#64748b">Servicio Técnico • Impresiones</p>
+              <p style="margin:0;font-size:.85rem">Chanis - Frente a Farmacias Metro | WhatsApp: 6002-3188</p>
             </div>
           </div>
-          <h2 style="text-align:center; margin-bottom:25px;">${titulo}</h2>
+          <h2 style="text-align:center;margin-bottom:10px">${titulo}</h2>
+          <p style="text-align:center;margin-bottom:25px"><strong>${data.numero || ''}</strong></p>
           <p><strong>Fecha:</strong> ${data.fecha}</p>
           <p><strong>Cliente:</strong> ${data.cliente}</p>
-          <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+          ${data.telefono ? `<p><strong>Teléfono:</strong> ${data.telefono}</p>` : ''}
+          <table style="width:100%;border-collapse:collapse;margin-top:20px">
             <thead>
-              <tr style="background:#f1f5f9;">
-                <th style="padding:10px; border:1px solid #cbd5e1;">Producto</th>
-                <th style="padding:10px; border:1px solid #cbd5e1;">Cantidad</th>
-                <th style="padding:10px; border:1px solid #cbd5e1;">Precio</th>
-                <th style="padding:10px; border:1px solid #cbd5e1;">Total</th>
+              <tr style="background:#f1f5f9">
+                <th style="padding:10px;border:1px solid #cbd5e1">Producto</th>
+                <th style="padding:10px;border:1px solid #cbd5e1">Cant.</th>
+                <th style="padding:10px;border:1px solid #cbd5e1">Precio</th>
+                <th style="padding:10px;border:1px solid #cbd5e1">Total</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td style="padding:10px; border:1px solid #cbd5e1;">${data.producto}</td>
-                <td style="padding:10px; border:1px solid #cbd5e1; text-align:center;">${data.cantidad}</td>
-                <td style="padding:10px; border:1px solid #cbd5e1;">$${data.precio.toFixed(2)}</td>
-                <td style="padding:10px; border:1px solid #cbd5e1;">$${data.total.toFixed(2)}</td>
-              </tr>
-            </tbody>
+            <tbody>${itemsHtml}</tbody>
           </table>
-          <h3 style="text-align:right; margin-top:25px;">Total: $${data.total.toFixed(2)}</h3>
-          <p style="margin-top:40px; font-size:0.85rem; color:#64748b; text-align:center;">
-            Gracias por preferir Graphitech
-          </p>
-        </div>
-      `;
+          <h3 style="text-align:right;margin-top:25px">Total: $${parseFloat(data.total).toFixed(2)}</h3>
+          ${data.notas ? `<p style="margin-top:20px"><strong>Notas:</strong> ${data.notas}</p>` : ''}
+          <p style="margin-top:40px;font-size:.85rem;color:#64748b;text-align:center">Gracias por preferir Graphitech</p>
+        </div>`;
       window.print();
     }
 
-    // Cargar historiales de cotizaciones y facturas
     db.ref('cotizaciones').on('value', snap => {
+      cotizaciones = {};
       const tbody = document.getElementById('tabla-cotizaciones');
       tbody.innerHTML = '';
       snap.forEach(child => {
         const c = child.val();
+        cotizaciones[child.key] = c;
+        const nItems = Array.isArray(c.items) ? c.items.length : 1;
+        // Guardamos el objeto completo para poder imprimir después
         tbody.innerHTML += `<tr>
-          <td>${c.fecha}</td><td>${c.cliente}</td><td>${c.producto}</td>
-          <td>$${parseFloat(c.total).toFixed(2)}</td>
-          <td><button class="btn btn-secondary" onclick='imprimirDocumento("cotizacion", ${JSON.stringify(c)})'>Imprimir</button></td>
+          <td>${c.numero||'-'}</td><td>${c.fecha}</td><td>${c.cliente}</td>
+          <td>${nItems} producto(s)</td><td>$${parseFloat(c.total).toFixed(2)}</td>
+          <td>
+            <button class="btn btn-secondary" onclick="imprimirDesdeId('cotizacion','${child.key}')">Imprimir</button>
+            <button class="btn btn-danger" onclick="eliminarCotizacion('${child.key}')">Anular</button>
+          </td>
         </tr>`;
       });
     });
 
     db.ref('facturas').on('value', snap => {
+      facturas = {};
       const tbody = document.getElementById('tabla-facturas');
       tbody.innerHTML = '';
       snap.forEach(child => {
         const f = child.val();
+        facturas[child.key] = f;
+        const nItems = Array.isArray(f.items) ? f.items.length : 1;
         tbody.innerHTML += `<tr>
-          <td>${f.fecha}</td><td>${f.cliente}</td><td>${f.producto}</td>
-          <td>$${parseFloat(f.total).toFixed(2)}</td>
-          <td><button class="btn btn-secondary" onclick='imprimirDocumento("factura", ${JSON.stringify(f)})'>Imprimir</button></td>
+          <td>${f.numero||'-'}</td><td>${f.fecha}</td><td>${f.cliente}</td>
+          <td>${nItems} producto(s)</td><td>$${parseFloat(f.total).toFixed(2)}</td>
+          <td>
+            <button class="btn btn-secondary" onclick="imprimirDesdeId('factura','${child.key}')">Imprimir</button>
+            <button class="btn btn-danger" onclick="eliminarFactura('${child.key}')">Anular</button>
+          </td>
+        </tr>`;
+      });
+      actualizarDashboard();
+    });
+
+    // Función auxiliar segura para imprimir (evita problemas con comillas en JSON)
+    function imprimirDesdeId(tipo, id) {
+      const data = tipo === 'factura' ? facturas[id] : cotizaciones[id];
+      if (!data) return alert('No se encontró el documento');
+      imprimirDocumento(tipo === 'factura' ? 'FACTURA' : 'COTIZACIÓN', data);
+    }
+
+    // ========== GASTOS ==========
+    function agregarGasto() {
+      const descripcion = document.getElementById('gasto-descripcion').value.trim();
+      const monto = parseFloat(document.getElementById('gasto-monto').value) || 0;
+      if (!descripcion) return alert('Escribe la descripción');
+      db.ref('gastos').push({ fecha: new Date().toLocaleString('es-PA'), descripcion, monto });
+      document.getElementById('gasto-descripcion').value = '';
+      document.getElementById('gasto-monto').value = '';
+    }
+
+    db.ref('gastos').on('value', snap => {
+      gastosData = {};
+      const tbody = document.getElementById('tabla-gastos');
+      tbody.innerHTML = '';
+      snap.forEach(child => {
+        const g = child.val();
+        gastosData[child.key] = g;
+        tbody.innerHTML += `<tr>
+          <td>${g.fecha}</td><td>${g.descripcion}</td>
+          <td>$${parseFloat(g.monto).toFixed(2)}</td>
+        </tr>`;
+      });
+      actualizarDashboard();
+    });
+
+    // ========== MOVIMIENTOS DE STOCK ==========
+    function registrarMovimiento(tipo, producto, cantidad, stockResultante, detalle) {
+      db.ref('movimientos').push({
+        fecha: new Date().toLocaleString('es-PA'),
+        tipo,
+        producto,
+        cantidad,
+        stockResultante,
+        detalle: detalle || '',
+        usuario: 'sistema'
+      });
+    }
+
+    db.ref('movimientos').on('value', snap => {
+      const tbody = document.getElementById('tabla-movimientos');
+      tbody.innerHTML = '';
+      const rows = [];
+      snap.forEach(child => rows.push(child.val()));
+      rows.reverse().forEach(m => {
+        const signo = m.cantidad > 0 ? '+' : '';
+        tbody.innerHTML += `<tr>
+          <td>${m.fecha}</td>
+          <td>${m.tipo}</td>
+          <td>${m.producto}</td>
+          <td>${signo}${m.cantidad}</td>
+          <td>${m.stockResultante}</td>
+          <td>${m.detalle || '-'} ${m.usuario ? '('+m.usuario+')' : ''}</td>
         </tr>`;
       });
     });
+
+    // ========== EXPORTAR CSV ==========
+    function exportarCSV(tipo) {
+      let headers = [], rows = [], filename = tipo + '.csv';
+      if (tipo === 'inventario') {
+        headers = ['Producto','Categoría','Precio','Costo','Stock'];
+        Object.values(productos).forEach(p => rows.push([p.nombre, p.categoria||'', p.precio, p.costo||0, p.stock]));
+      } else if (tipo === 'clientes') {
+        headers = ['Nombre','Teléfono','Email','Dirección'];
+        Object.values(clientes).forEach(c => rows.push([c.nombre, c.telefono||'', c.email||'', c.direccion||'']));
+      } else if (tipo === 'compras') {
+        headers = ['Fecha','Proveedor','Producto','Cantidad','Costo'];
+        db.ref('compras').once('value', snap => {
+          snap.forEach(c => { const v=c.val(); rows.push([v.fecha,v.proveedor,v.producto,v.cantidad,v.costo]); });
+          descargarCSV(headers, rows, filename);
+        });
+        return;
+      } else if (tipo === 'facturas') {
+        headers = ['Número','Fecha','Cliente','Total','Notas'];
+        Object.values(facturas).forEach(f => rows.push([f.numero, f.fecha, f.cliente, f.total, f.notas||'']));
+      } else if (tipo === 'cotizaciones') {
+        headers = ['Número','Fecha','Cliente','Total','Notas'];
+        Object.values(cotizaciones).forEach(c => rows.push([c.numero, c.fecha, c.cliente, c.total, c.notas||'']));
+      } else if (tipo === 'gastos') {
+        headers = ['Fecha','Descripción','Monto'];
+        Object.values(gastosData).forEach(g => rows.push([g.fecha, g.descripcion, g.monto]));
+      } else if (tipo === 'movimientos') {
+        headers = ['Fecha','Tipo','Producto','Cantidad','Stock resultante','Detalle'];
+        db.ref('movimientos').once('value', snap => {
+          snap.forEach(c => { const m=c.val(); rows.push([m.fecha,m.tipo,m.producto,m.cantidad,m.stockResultante,m.detalle||'']); });
+          descargarCSV(headers, rows, filename);
+        });
+        return;
+      }
+      descargarCSV(headers, rows, filename);
+    }
+
+    function descargarCSV(headers, rows, filename) {
+      const csv = [headers.join(','), ...rows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(','))].join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    }
   </script>
 </body>
 </html>
