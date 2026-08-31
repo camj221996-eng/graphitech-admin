@@ -84,6 +84,7 @@
       <button class="nav-btn" onclick="showSection('proveedores',this)">🏭 Proveedores</button>
       <button class="nav-btn" onclick="showSection('compras',this)">🛒 Compras</button>
       <button class="nav-btn" onclick="showSection('cotizaciones',this)">📋 Cotizaciones</button>
+      <button class="nav-btn" onclick="showSection('pedidos',this)">📝 Hojas de Pedido</button>
       <button class="nav-btn" onclick="showSection('facturas',this)">🧾 Facturas</button>
       <button class="nav-btn" onclick="showSection('gastos',this)">💰 Gastos</button>
       <button class="nav-btn" onclick="showSection('movimientos',this)">📜 Movimientos</button>
@@ -93,7 +94,7 @@
       <div class="header">
         <h2 id="section-title">Dashboard</h2>
         <div class="search-box">
-          <input type="text" id="busqueda-global" placeholder="🔍 Buscar cliente, proveedor, producto, factura..." oninput="busquedaGlobal()">
+          <input type="text" id="busqueda-global" placeholder="🔍 Buscar cliente, proveedor, producto, factura, pedido..." oninput="busquedaGlobal()">
         </div>
         <span id="fecha"></span>
       </div>
@@ -282,6 +283,39 @@
           </div>
         </div>
 
+        <!-- HOJAS DE PEDIDO -->
+        <div id="pedidos" class="section">
+          <div class="card">
+            <h3>Nueva Hoja de Pedido (no descuenta stock)</h3>
+            <div class="form-grid">
+              <select id="ped-cliente"><option value="">Seleccionar cliente</option></select>
+            </div>
+            <div class="form-grid-3">
+              <select id="ped-producto" onchange="cargarPrecioItem('ped')"><option value="">Producto</option></select>
+              <input type="number" id="ped-cantidad" placeholder="Cantidad" min="1" value="1">
+              <input type="number" id="ped-precio" placeholder="Precio unit." step="0.01">
+            </div>
+            <button class="btn btn-primary" onclick="agregarItem('ped')">+ Agregar producto</button>
+            <table class="items-table">
+              <thead><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Subtotal</th><th></th></tr></thead>
+              <tbody id="ped-items"></tbody>
+            </table>
+            <p style="text-align:right;font-weight:600;margin:8px 0">Total: $<span id="ped-total-display">0.00</span></p>
+            <textarea id="ped-notas" placeholder="Notas / Observaciones (opcional)"></textarea>
+            <button class="btn btn-primary" onclick="generarPedido()">Generar Hoja de Pedido</button>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <h3 style="margin:0">Hojas de Pedido</h3>
+              <button class="btn btn-secondary" onclick="exportarCSV('pedidos')">⬇ Exportar CSV</button>
+            </div>
+            <table>
+              <thead><tr><th>Nº</th><th>Fecha</th><th>Cliente</th><th>Items</th><th>Total</th><th></th></tr></thead>
+              <tbody id="tabla-pedidos"></tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- FACTURAS -->
         <div id="facturas" class="section">
           <div class="card">
@@ -370,8 +404,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let productos = {}, clientes = {}, proveedores = {}, facturas = {}, cotizaciones = {};
-    let itemsCot = [], itemsFac = [];
+    let productos = {}, clientes = {}, proveedores = {}, facturas = {}, cotizaciones = {}, pedidos = {};
+    let itemsCot = [], itemsFac = [], itemsPed = [];
 
     // Fecha y eventos iniciales
     document.getElementById('fecha').textContent = new Date().toLocaleDateString('es-PA');
@@ -430,6 +464,11 @@
       Object.values(cotizaciones).forEach(c => {
         if ((c.numero||'').toLowerCase().includes(q) || (c.cliente||'').toLowerCase().includes(q)) {
           html += `<p>📋 <strong>Cotización ${c.numero}:</strong> ${c.cliente} - $${parseFloat(c.total).toFixed(2)}</p>`;
+        }
+      });
+      Object.values(pedidos).forEach(p => {
+        if ((p.numero||'').toLowerCase().includes(q) || (p.cliente||'').toLowerCase().includes(q)) {
+          html += `<p>📝 <strong>Pedido ${p.numero}:</strong> ${p.cliente} - $${parseFloat(p.total).toFixed(2)}</p>`;
         }
       });
       lista.innerHTML = html || '<p>No se encontraron resultados</p>';
@@ -553,7 +592,7 @@
       productos = {};
       categorias = new Set();
       const tbody = document.getElementById('tabla-inventario');
-      const selects = ['compra-producto','cot-producto','fac-producto'];
+      const selects = ['compra-producto','cot-producto','fac-producto','ped-producto'];
       tbody.innerHTML = '';
       selects.forEach(id => {
         const el = document.getElementById(id);
@@ -603,7 +642,7 @@
     db.ref('clientes').on('value', snap => {
       clientes = {};
       const tbody = document.getElementById('tabla-clientes');
-      const selects = ['cot-cliente','fac-cliente'];
+      const selects = ['cot-cliente','fac-cliente','ped-cliente'];
       tbody.innerHTML = '';
       selects.forEach(id => document.getElementById(id).innerHTML = '<option value="">Seleccionar cliente</option>');
       snap.forEach(child => {
@@ -728,6 +767,9 @@
       if (tipo === 'cot') {
         itemsCot.push(item);
         renderItems('cot');
+      } else if (tipo === 'ped') {
+        itemsPed.push(item);
+        renderItems('ped');
       } else {
         itemsFac.push(item);
         renderItems('fac');
@@ -738,7 +780,7 @@
     }
 
     function renderItems(tipo) {
-      const items = tipo === 'cot' ? itemsCot : itemsFac;
+      const items = tipo === 'cot' ? itemsCot : (tipo === 'ped' ? itemsPed : itemsFac);
       const tbody = document.getElementById(`${tipo}-items`);
       let total = 0;
       tbody.innerHTML = items.map((it, i) => {
@@ -756,6 +798,7 @@
 
     function quitarItem(tipo, idx) {
       if (tipo === 'cot') { itemsCot.splice(idx,1); renderItems('cot'); }
+      else if (tipo === 'ped') { itemsPed.splice(idx,1); renderItems('ped'); }
       else { itemsFac.splice(idx,1); renderItems('fac'); }
     }
 
@@ -785,6 +828,40 @@
         renderItems('cot');
         document.getElementById('cot-notas').value = '';
       });
+    }
+
+    // ========== HOJA DE PEDIDO ==========
+    function generarPedido() {
+      const cliId = document.getElementById('ped-cliente').value;
+      if (!cliId) return alert('Selecciona un cliente');
+      if (itemsPed.length === 0) return alert('Agrega al menos un producto');
+      const total = itemsPed.reduce((s,i) => s + i.subtotal, 0);
+      const notas = document.getElementById('ped-notas').value.trim();
+
+      db.ref('contadores/pedido').transaction(actual => (actual || 0) + 1, (error, committed, snapshot) => {
+        if (!committed) return alert('Error al generar número');
+        const numero = 'PED-' + String(snapshot.val()).padStart(4, '0');
+        const data = {
+          numero,
+          fecha: new Date().toLocaleString('es-PA'),
+          cliente: clientes[cliId].nombre,
+          telefono: clientes[cliId].telefono || '',
+          items: itemsPed,
+          total,
+          notas
+        };
+        db.ref('pedidos').push(data);
+        imprimirDocumento('HOJA DE PEDIDO', data);
+        itemsPed = [];
+        renderItems('ped');
+        document.getElementById('ped-notas').value = '';
+      });
+    }
+
+    function eliminarPedido(id) {
+      if (!confirm('¿Anular / eliminar esta hoja de pedido?')) return;
+      db.ref('pedidos/' + id).remove();
+      alert('Hoja de pedido eliminada');
     }
 
     // ========== FACTURA ==========
@@ -913,13 +990,31 @@
         const c = child.val();
         cotizaciones[child.key] = c;
         const nItems = Array.isArray(c.items) ? c.items.length : 1;
-        // Guardamos el objeto completo para poder imprimir después
         tbody.innerHTML += `<tr>
           <td>${c.numero||'-'}</td><td>${c.fecha}</td><td>${c.cliente}</td>
           <td>${nItems} producto(s)</td><td>$${parseFloat(c.total).toFixed(2)}</td>
           <td>
             <button class="btn btn-secondary" onclick="imprimirDesdeId('cotizacion','${child.key}')">Imprimir</button>
             <button class="btn btn-danger" onclick="eliminarCotizacion('${child.key}')">Anular</button>
+          </td>
+        </tr>`;
+      });
+    });
+
+    db.ref('pedidos').on('value', snap => {
+      pedidos = {};
+      const tbody = document.getElementById('tabla-pedidos');
+      tbody.innerHTML = '';
+      snap.forEach(child => {
+        const p = child.val();
+        pedidos[child.key] = p;
+        const nItems = Array.isArray(p.items) ? p.items.length : 1;
+        tbody.innerHTML += `<tr>
+          <td>${p.numero||'-'}</td><td>${p.fecha}</td><td>${p.cliente}</td>
+          <td>${nItems} producto(s)</td><td>$${parseFloat(p.total).toFixed(2)}</td>
+          <td>
+            <button class="btn btn-secondary" onclick="imprimirDesdeId('pedido','${child.key}')">Imprimir</button>
+            <button class="btn btn-danger" onclick="eliminarPedido('${child.key}')">Anular</button>
           </td>
         </tr>`;
       });
@@ -947,9 +1042,19 @@
 
     // Función auxiliar segura para imprimir (evita problemas con comillas en JSON)
     function imprimirDesdeId(tipo, id) {
-      const data = tipo === 'factura' ? facturas[id] : cotizaciones[id];
+      let data, titulo;
+      if (tipo === 'factura') {
+        data = facturas[id];
+        titulo = 'FACTURA';
+      } else if (tipo === 'pedido') {
+        data = pedidos[id];
+        titulo = 'HOJA DE PEDIDO';
+      } else {
+        data = cotizaciones[id];
+        titulo = 'COTIZACIÓN';
+      }
       if (!data) return alert('No se encontró el documento');
-      imprimirDocumento(tipo === 'factura' ? 'FACTURA' : 'COTIZACIÓN', data);
+      imprimirDocumento(titulo, data);
     }
 
     // ========== GASTOS ==========
@@ -1030,6 +1135,9 @@
       } else if (tipo === 'cotizaciones') {
         headers = ['Número','Fecha','Cliente','Total','Notas'];
         Object.values(cotizaciones).forEach(c => rows.push([c.numero, c.fecha, c.cliente, c.total, c.notas||'']));
+      } else if (tipo === 'pedidos') {
+        headers = ['Número','Fecha','Cliente','Total','Notas'];
+        Object.values(pedidos).forEach(p => rows.push([p.numero, p.fecha, p.cliente, p.total, p.notas||'']));
       } else if (tipo === 'gastos') {
         headers = ['Fecha','Descripción','Monto'];
         Object.values(gastosData).forEach(g => rows.push([g.fecha, g.descripcion, g.monto]));
