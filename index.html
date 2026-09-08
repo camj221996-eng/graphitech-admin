@@ -1,720 +1,1886 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DTF Estudio Pro | Graphitech</title>
-    <style>
-        :root {
-            --bg-sidebar: #121214;
-            --text-main: #f4f4f5;
-            --accent: #3b82f6;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { display: flex; height: 100vh; background: #09090b; overflow: hidden; color: var(--text-main); }
-        .sidebar {
-            width: 370px; background: var(--bg-sidebar); padding: 18px 20px;
-            display: flex; flex-direction: column; gap: 14px;
-            box-shadow: 5px 0 25px rgba(0,0,0,0.8); z-index: 10;
-            border-right: 1px solid #27272a; overflow-y: auto;
-        }
-        .logo-box { display: flex; flex-direction: column; align-items: center; gap: 6px; padding-bottom: 10px; border-bottom: 1px solid #27272a; }
-        .logo-box img { width: 80px; height: 80px; object-fit: contain; border-radius: 50%; background: #fff; padding: 3px; }
-        .logo-box h1 { font-size: 1.05rem; text-align: center; }
-        .logo-box .subtitle { font-size: 0.68rem; color: #71717a; margin-top: -3px; }
-        h2 { font-size: 0.8rem; margin-bottom: 6px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 1px; }
-        .product-type { display: flex; gap: 6px; margin-bottom: 4px; }
-        .type-btn {
-            flex: 1; padding: 7px; border-radius: 6px; border: 1px solid #3f3f46;
-            background: #1c1c1f; color: #a1a1aa; cursor: pointer; font-size: 0.8rem; font-weight: 600;
-        }
-        .type-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-        .color-picker { display: flex; gap: 8px; flex-wrap: wrap; }
-        .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #3f3f46; cursor: pointer; }
-        .color-btn.active { border-color: #fff; transform: scale(1.12); box-shadow: 0 0 8px rgba(59,130,246,0.6); }
-        .btn-upload, .btn-action {
-            background: #27272a; color: #fff; border: 1px dashed #52525b;
-            padding: 9px; border-radius: 6px; cursor: pointer; text-align: center;
-            display: block; font-size: 0.85rem;
-        }
-        .btn-upload:hover, .btn-action:hover { border-color: var(--accent); background: #323238; }
-        .btn-danger { border-color: #7f1d1d; background: #450a0a; }
-        .btn-danger:hover { border-color: #ef4444; background: #7f1d1d; }
-        .btn-save { background: #166534 !important; border-color: #22c55e !important; color: #fff !important; }
-        .btn-preview { background: #5b21b6 !important; border-color: #7c3aed !important; color: #fff !important; }
-        input[type="file"] { display: none; }
-        .slider-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .slider-row label { font-size: 0.78rem; color: #a1a1aa; width: 75px; }
-        input[type="range"] { flex: 1; accent-color: var(--accent); margin-right: 6px; }
-        input[type="number"] {
-            width: 50px; text-align: center; border-radius: 4px; border: 1px solid #3f3f46;
-            background: #121214; color: #fff; padding: 2px; font-size: 0.8rem;
-        }
-        .hint { font-size: 0.68rem; color: #71717a; margin-top: 5px; font-style: italic; line-height: 1.35; }
-        .actions { display: flex; flex-direction: column; gap: 7px; }
-        .price-box {
-            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
-            border: 1px solid #3b82f6; border-radius: 10px; padding: 12px 14px;
-        }
-        .price-box .price-label { font-size: 0.7rem; color: #93c5fd; text-transform: uppercase; }
-        .price-box .price-value { font-size: 1.6rem; font-weight: 700; color: #4ade80; }
-        .price-box .price-detail { font-size: 0.7rem; color: #94a3b8; margin-top: 5px; line-height: 1.35; }
-        .price-box .size-badge {
-            display: inline-block; background: #1e40af; color: #bfdbfe;
-            font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 99px; margin-top: 5px;
-        }
-        #viewport {
-            flex: 1; position: relative; background: radial-gradient(circle at center, #f8f8f8 0%, #e5e5e5 100%);
-            display: flex; justify-content: center; align-items: center; overflow: hidden;
-            perspective: 1200px; cursor: grab;
-        }
-        #viewport:active { cursor: grabbing; }
-        .studio-mockup {
-            position: relative; width: 600px; height: 650px;
-            display: flex; justify-content: center; align-items: center;
-            transform-style: preserve-3d; transition: transform 0.08s linear;
-            filter: drop-shadow(0 30px 40px rgba(0,0,0,0.25));
-        }
-        #shirtImage {
-            position: absolute; width: 100%; height: 100%; object-fit: contain;
-            pointer-events: none; user-select: none;
-        }
-        .print-area {
-            position: absolute; top: 26%; width: 36%; height: 45%;
-            display: flex; justify-content: center; align-items: center;
-            z-index: 2; transform: translateZ(20px); pointer-events: none;
-        }
-        .print-area.gorra { top: 28%; width: 42%; height: 28%; }
-        .user-design {
-            position: absolute; max-width: 100%; max-height: 100%; object-fit: contain;
-            cursor: grab; pointer-events: auto; user-select: none;
-            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
-        }
-        .user-design:active { cursor: grabbing; }
-        .watermark {
-            position: absolute; bottom: 20px; right: 20px;
-            background: rgba(0,0,0,0.75); color: #fff; font-weight: 600;
-            font-size: 0.75rem; padding: 6px 12px; border-radius: 6px; pointer-events: none;
-        }
-        .reset3d {
-            position: absolute; top: 20px; right: 20px; background: #121214; color: #fff;
-            border: 1px solid #3f3f46; padding: 7px 12px; border-radius: 6px;
-            font-size: 0.75rem; cursor: pointer; z-index: 5;
-        }
-        .view-toggle { display: none; gap: 6px; margin-top: 8px; }
-        .view-toggle.show { display: flex; }
-        .view-btn {
-            flex: 1; padding: 7px; border-radius: 6px; border: 1px solid #3f3f46;
-            background: #1c1c1f; color: #a1a1aa; cursor: pointer; font-size: 0.8rem; font-weight: 600;
-        }
-        .view-btn.active { background: #7c3aed; border-color: #7c3aed; color: #fff; }
-        .designs-list {
-            max-height: 140px; overflow-y: auto; background: #1c1c1f;
-            border-radius: 6px; padding: 6px; margin-top: 6px;
-        }
-        .design-item {
-            display: flex; align-items: center; gap: 8px; padding: 5px 6px;
-            border-radius: 5px; cursor: pointer; font-size: 0.75rem; margin-bottom: 3px;
-            background: #27272a; border: 1px solid transparent;
-        }
-        .design-item:hover { background: #323238; }
-        .design-item.active { border-color: #7c3aed; background: #2e1065; }
-        .design-item img { width: 28px; height: 28px; object-fit: contain; background: #fff; border-radius: 3px; }
-        .design-item .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .design-item .del {
-            background: #7f1d1d; color: #fff; border: none; border-radius: 3px;
-            width: 20px; height: 20px; cursor: pointer; font-size: 12px; line-height: 1;
-        }
-        .design-side-info { font-size: 0.72rem; color: #a78bfa; margin-top: 3px; font-weight: 600; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Gestión Empresarial</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Firebase SDK (compat para un solo HTML) -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <style>
+    :root {
+      --sidebar-width: 260px;
+      --primary: #0d6efd;
+      --sidebar-bg: #1e293b;
+      --sidebar-hover: #334155;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      overflow-x: hidden;
+    }
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--sidebar-bg);
+      color: #e2e8f0;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .sidebar-header h4 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 0;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1.5rem;
+      color: #94a3b8;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: var(--sidebar-hover);
+      color: #fff;
+      border-left-color: var(--primary);
+    }
+    .nav-item i { font-size: 1.15rem; width: 24px; text-align: center; }
+    .main-content {
+      margin-left: var(--sidebar-width);
+      min-height: 100vh;
+      padding: 1.5rem;
+    }
+    .topbar {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .card-stat {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      transition: transform 0.2s;
+    }
+    .card-stat:hover { transform: translateY(-2px); }
+    .card-stat .icon-box {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+    .section { display: none; }
+    .section.active { display: block; }
+    .table-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .table-card .card-header {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-action {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.85rem;
+    }
+    .badge-stock-ok { background: #22c55e; }
+    .badge-stock-low { background: #f59e0b; }
+    .badge-stock-out { background: #ef4444; }
+    .modal-header { background: #f8fafc; }
+    .print-area { display: none; }
+    @media print {
+      body * { visibility: hidden; }
+      .print-area, .print-area * { visibility: visible; }
+      .print-area {
+        display: block !important;
+        position: absolute;
+        left: 0; top: 0;
+        width: 100%;
+        padding: 20px;
+      }
+      .no-print { display: none !important; }
+    }
+    @media (max-width: 991px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.show { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+      .overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 999;
+      }
+      .overlay.show { display: block; }
+    }
+    .chart-container {
+      position: relative;
+      height: 280px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #94a3b8;
+    }
+    .empty-state i { font-size: 3rem; margin-bottom: 1rem; }
+  </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo-box">
-            <img src="logo.jpg" alt="Graphitech Logo" onerror="this.style.display='none'">
-            <h1>GRAPHITECH</h1>
-            <div class="subtitle">DTF Estudio Pro</div>
-        </div>
-        <div>
-            <h2>1. Tipo de Producto</h2>
-            <div class="product-type">
-                <button class="type-btn active" id="btn-camiseta" onclick="setProductType('camiseta')">Camiseta</button>
-                <button class="type-btn" id="btn-sueter" onclick="setProductType('sueter')">Suéter</button>
-                <button class="type-btn" id="btn-gorra" onclick="setProductType('gorra')">Gorra</button>
-            </div>
-            <div id="opcion-sueter" style="display:none; margin-top:8px;">
-                <div style="font-size:0.72rem; color:#a1a1aa; margin-bottom:5px;">¿De quién es el suéter?</div>
-                <div class="product-type">
-                    <button class="type-btn active" id="btn-sueter-nuestro" onclick="setDuenoSueter('nuestro')">Nuestro +$5</button>
-                    <button class="type-btn" id="btn-sueter-cliente" onclick="setDuenoSueter('cliente')">Cliente trae</button>
-                </div>
-            </div>
-            <div class="view-toggle" id="view-toggle">
-                <button class="view-btn active" id="btn-frente" onclick="setView('frente')">Frente</button>
-                <button class="view-btn" id="btn-espalda" onclick="setView('espalda')">Espalda</button>
-            </div>
-        </div>
-        <div>
-            <h2 id="color-title">2. Color de la Tela</h2>
-            <div class="color-picker" id="color-picker-camiseta">
-                <div class="color-btn active" style="background:#f4f4f5;" onclick="setShirtColor('white', this)"></div>
-                <div class="color-btn" style="background:#18181b;" onclick="setShirtColor('black', this)"></div>
-                <div class="color-btn" style="background:#dc2626;" onclick="setShirtColor('red', this)"></div>
-                <div class="color-btn" style="background:#2563eb;" onclick="setShirtColor('blue', this)"></div>
-            </div>
-            <div class="color-picker" id="color-picker-sueter" style="display:none;">
-                <div class="color-btn active" style="background:#f4f4f5;" onclick="setShirtColor('white', this)"></div>
-                <div class="color-btn" style="background:#18181b;" onclick="setShirtColor('black', this)"></div>
-                <div class="color-btn" style="background:#dc2626;" onclick="setShirtColor('red', this)"></div>
-                <div class="color-btn" style="background:#2563eb;" onclick="setShirtColor('blue', this)"></div>
-            </div>
-            <div class="color-picker" id="color-picker-gorra" style="display:none;">
-                <div class="color-btn active" style="background:#f4f4f5;" onclick="setShirtColor('white', this)"></div>
-                <div class="color-btn" style="background:#18181b;" onclick="setShirtColor('black', this)"></div>
-            </div>
-        </div>
-        <div>
-            <h2>3. Subir Diseños (múltiples)</h2>
-            <label for="file-upload" class="btn-upload" id="upload-label">+ Agregar diseño (Frente)</label>
-            <input type="file" id="file-upload" accept="image/png, image/jpeg" multiple>
-            <div class="design-side-info" id="design-side-info">Cara actual: Frente</div>
-            <div class="designs-list" id="designs-list"></div>
-        </div>
-        <div class="actions">
-            <button class="btn-action" onclick="removeBackground()">Quitar Fondo (seleccionado)</button>
-            <button class="btn-action btn-danger" onclick="removeSelectedDesign()">Eliminar diseño seleccionado</button>
-            <button class="btn-action btn-danger" onclick="removeAllDesigns()">Eliminar todos de esta cara</button>
-            <button class="btn-action btn-preview" onclick="previewBothSides()">Ver Frente + Espalda</button>
-            <button class="btn-action btn-save" onclick="downloadFinalPNG()">Descargar PNG Final</button>
-        </div>
-        <div>
-            <h2>4. Ajustes del diseño seleccionado</h2>
-            <div class="slider-row">
-                <label>Tamaño</label>
-                <input type="range" id="scale" min="5" max="500" value="100">
-                <input type="number" id="scale-num" value="100" min="1" max="1000">
-            </div>
-            <div class="slider-row">
-                <label>Mover ↔</label>
-                <input type="range" id="posX" min="-400" max="400" value="0">
-                <input type="number" id="posX-num" value="0">
-            </div>
-            <div class="slider-row">
-                <label>Mover ↕</label>
-                <input type="range" id="posY" min="-400" max="400" value="0">
-                <input type="number" id="posY-num" value="0">
-            </div>
-            <p class="hint">
-                • Puedes agregar muchas imágenes por cara<br>
-                • Haz clic en una imagen de la lista para seleccionarla<br>
-                • Arrastra la imagen en el mockup para moverla
-            </p>
-        </div>
-        <div>
-            <h2>5. Precio estimado</h2>
-            <div class="price-box">
-                <div class="price-label">Precio total</div>
-                <div class="price-value" id="price-display">$0</div>
-                <div class="size-badge" id="size-badge">Tamaño: —</div>
-                <div class="price-detail" id="price-detail">Sube diseños para ver el precio.</div>
-            </div>
-        </div>
-    </div>
-    <div id="viewport">
-        <button class="reset3d" onclick="reset3D()">Reset Giro</button>
-        <div class="studio-mockup" id="mockup">
-            <img id="shirtImage" src="t-shirt.png" alt="Producto">
-            <div class="print-area" id="print-area"></div>
-        </div>
-        <div class="watermark">GRAPHITECH · DTF ESTUDIO PRO</div>
-    </div>
-    <script>
-        const PRECIO_INSIGNIA = 5;
-        const PRECIO_GRANDE = 10;
-        const EXTRA_SUETER = 5;
-        const UMBRAL_GRANDE = 90;
+  <!-- Overlay mobile -->
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-        const products = {
-            camiseta: { 
-                white: 't-shirt.png', 
-                black: 't-shirt-black.png', 
-                red: 't-shirt-red.png', 
-                blue: 't-shirt-blue.png' 
-            },
-            sueter: {
-                white: { frente: 't-shirt.png', espalda: 't-shirt.png' },
-                black: { frente: 't-shirt-black.png', espalda: 'sueter-black-back.png' },
-                red:   { frente: 't-shirt-red.png', espalda: 't-shirt-red.png' },
-                blue:  { frente: 't-shirt-blue.png', espalda: 't-shirt-blue.png' }
-            },
-            gorra: { 
-                white: 'gorra-white1.png', 
-                black: 'gorra-black2.png' 
-            }
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <i class="bi bi-building text-primary" style="font-size:1.5rem"></i>
+      <h4>Mi Negocio</h4>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-section="dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a class="nav-item" data-section="ventas"><i class="bi bi-cart-check"></i> Ventas</a>
+      <a class="nav-item" data-section="compras"><i class="bi bi-bag-plus"></i> Compras</a>
+      <a class="nav-item" data-section="gastos"><i class="bi bi-cash-stack"></i> Gastos</a>
+      <a class="nav-item" data-section="inventario"><i class="bi bi-box-seam"></i> Inventario</a>
+      <a class="nav-item" data-section="cotizaciones"><i class="bi bi-file-earmark-text"></i> Cotizaciones</a>
+      <a class="nav-item" data-section="facturas"><i class="bi bi-receipt"></i> Facturas</a>
+      <a class="nav-item" data-section="clientes"><i class="bi bi-people"></i> Clientes</a>
+      <a class="nav-item" data-section="proveedores"><i class="bi bi-truck"></i> Proveedores</a>
+      <hr class="mx-3 border-secondary" />
+      <a class="nav-item" data-section="config"><i class="bi bi-gear"></i> Configuración</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="topbar no-print">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-outline-secondary d-lg-none" onclick="toggleSidebar()">
+          <i class="bi bi-list"></i>
+        </button>
+        <h5 class="mb-0 fw-semibold" id="pageTitle">Dashboard</h5>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-secondary" id="firebaseStatus">Conectando Firebase...</span>
+        <span class="text-muted small" id="fechaHoy"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="exportarDatos()" title="Exportar respaldo">
+          <i class="bi bi-download"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-success" onclick="document.getElementById('importFile').click()" title="Importar">
+          <i class="bi bi-upload"></i>
+        </button>
+        <input type="file" id="importFile" accept=".json" hidden onchange="importarDatos(event)" />
+      </div>
+    </div>
+
+    <!-- ================= DASHBOARD ================= -->
+    <section id="dashboard" class="section active">
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="card card-stat p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-muted small">Ventas del mes</div>
+                <div class="fs-4 fw-bold text-success" id="statVentas">$0</div>
+              </div>
+              <div class="icon-box bg-success bg-opacity-10 text-success"><i class="bi bi-graph-up-arrow"></i></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card card-stat p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-muted small">Gastos del mes</div>
+                <div class="fs-4 fw-bold text-danger" id="statGastos">$0</div>
+              </div>
+              <div class="icon-box bg-danger bg-opacity-10 text-danger"><i class="bi bi-graph-down-arrow"></i></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card card-stat p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-muted small">Inventario</div>
+                <div class="fs-4 fw-bold text-primary" id="statInventario">$0</div>
+              </div>
+              <div class="icon-box bg-primary bg-opacity-10 text-primary"><i class="bi bi-box"></i></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card card-stat p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-muted small">Utilidad mes</div>
+                <div class="fs-4 fw-bold text-info" id="statUtilidad">$0</div>
+              </div>
+              <div class="icon-box bg-info bg-opacity-10 text-info"><i class="bi bi-currency-dollar"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row g-3">
+        <div class="col-lg-8">
+          <div class="table-card p-3">
+            <h6 class="mb-3">Ventas vs Gastos (últimos 6 meses)</h6>
+            <div class="chart-container"><canvas id="chartFinanzas"></canvas></div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="table-card p-3 h-100">
+            <h6 class="mb-3">Productos con stock bajo</h6>
+            <div id="stockBajoList"></div>
+          </div>
+        </div>
+      </div>
+      <div class="row g-3 mt-1">
+        <div class="col-12">
+          <div class="table-card">
+            <div class="card-header"><span class="fw-semibold">Últimas ventas</span></div>
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light"><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Total</th><th>Estado</th></tr></thead>
+                <tbody id="ultimasVentas"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VENTAS ================= -->
+    <section id="ventas" class="section">
+      <div class="table-card">
+        <div class="card-header">
+          <span class="fw-semibold">Registro de Ventas</span>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalVenta()"><i class="bi bi-plus-lg"></i> Nueva Venta</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Pago</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tablaVentas"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= COMPRAS ================= -->
+    <section id="compras" class="section">
+      <div class="table-card">
+        <div class="card-header">
+          <span class="fw-semibold">Registro de Compras</span>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalCompra()"><i class="bi bi-plus-lg"></i> Nueva Compra</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr><th>#</th><th>Fecha</th><th>Proveedor</th><th>Productos</th><th>Total</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tablaCompras"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= GASTOS ================= -->
+    <section id="gastos" class="section">
+      <div class="table-card">
+        <div class="card-header">
+          <span class="fw-semibold">Registro de Gastos</span>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalGasto()"><i class="bi bi-plus-lg"></i> Nuevo Gasto</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr><th>#</th><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Monto</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tablaGastos"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= INVENTARIO ================= -->
+    <section id="inventario" class="section">
+      <div class="table-card">
+        <div class="card-header">
+          <span class="fw-semibold">Inventario de Productos</span>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalProducto()"><i class="bi bi-plus-lg"></i> Nuevo Producto</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Costo</th><th>Precio</th><th>Valor stock</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tablaInventario"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= COTIZACIONES ================= -->
+    <section id="cotizaciones" class="section">
+      <div class="table-card">
+        <div class="card-header">
+          <span class="fw-semibold">Cotizaciones</span>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalCotizacion()"><i class="bi bi-plus-lg"></i> Nueva Cotización</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Validez</th><th>Total</th><th>Estado</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tablaCotizaciones"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FACTURAS ================= -->
+    <section id="facturas" class="section">
+      <div class="table-card">
+        <div class="card-header">
+          <span class="fw-semibold">Facturas</span>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalFactura()"><i class="bi bi-plus-lg"></i> Nueva Factura</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tablaFacturas"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CLIENTES ================= -->
+    <section id="clientes" class="section">
+      <div class="table-card">
+        <div class="card-header">
+          <span class="fw-semibold">Clientes</span>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalCliente()"><i class="bi bi-plus-lg"></i> Nuevo Cliente</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr><th>Nombre</th><th>Documento</th><th>Teléfono</th><th>Email</th><th>Dirección</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tablaClientes"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PROVEEDORES ================= -->
+    <section id="proveedores" class="section">
+      <div class="table-card">
+        <div class="card-header">
+          <span class="fw-semibold">Proveedores</span>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalProveedor()"><i class="bi bi-plus-lg"></i> Nuevo Proveedor</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr><th>Nombre</th><th>Documento</th><th>Teléfono</th><th>Email</th><th>Contacto</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tablaProveedores"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CONFIG ================= -->
+    <section id="config" class="section">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="table-card p-4">
+            <h5 class="mb-3">Datos de la Empresa</h5>
+            <div class="mb-3">
+              <label class="form-label">Nombre de la empresa</label>
+              <input type="text" class="form-control" id="cfgNombre" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">RUC / NIT / RFC</label>
+              <input type="text" class="form-control" id="cfgRuc" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Dirección</label>
+              <input type="text" class="form-control" id="cfgDireccion" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Teléfono</label>
+              <input type="text" class="form-control" id="cfgTelefono" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" id="cfgEmail" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Moneda (símbolo)</label>
+              <input type="text" class="form-control" id="cfgMoneda" value="$" maxlength="3" />
+            </div>
+            <button class="btn btn-primary" onclick="guardarConfig()"><i class="bi bi-check-lg"></i> Guardar</button>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="table-card p-4">
+            <h5 class="mb-3">Datos y Respaldo</h5>
+            <p class="text-muted small">Tus datos se guardan automáticamente en este navegador. Exporta un respaldo periódicamente.</p>
+            <button class="btn btn-outline-primary mb-2 w-100" onclick="exportarDatos()"><i class="bi bi-download"></i> Exportar todos los datos (JSON)</button>
+            <button class="btn btn-outline-success mb-2 w-100" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Importar datos</button>
+            <hr />
+            <button class="btn btn-outline-danger w-100" onclick="borrarTodoFirebase()">
+              <i class="bi bi-trash"></i> Borrar todos los datos (Firebase)
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========== MODALES ========== -->
+
+  <!-- Modal Producto -->
+  <div class="modal fade" id="modalProducto" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloModalProducto">Nuevo Producto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="prodId" />
+          <div class="mb-3">
+            <label class="form-label">Código / SKU</label>
+            <input type="text" class="form-control" id="prodCodigo" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nombre *</label>
+            <input type="text" class="form-control" id="prodNombre" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Categoría</label>
+            <input type="text" class="form-control" id="prodCategoria" />
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label">Costo</label>
+              <input type="number" step="0.01" class="form-control" id="prodCosto" value="0" />
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label">Precio venta *</label>
+              <input type="number" step="0.01" class="form-control" id="prodPrecio" value="0" required />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label">Stock actual</label>
+              <input type="number" class="form-control" id="prodStock" value="0" />
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label">Stock mínimo</label>
+              <input type="number" class="form-control" id="prodStockMin" value="5" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="guardarProducto()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Cliente -->
+  <div class="modal fade" id="modalCliente" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloModalCliente">Nuevo Cliente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="cliId" />
+          <div class="mb-3"><label class="form-label">Nombre *</label><input type="text" class="form-control" id="cliNombre" required /></div>
+          <div class="mb-3"><label class="form-label">Documento (RUC/DNI/etc)</label><input type="text" class="form-control" id="cliDoc" /></div>
+          <div class="mb-3"><label class="form-label">Teléfono</label><input type="text" class="form-control" id="cliTel" /></div>
+          <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" id="cliEmail" /></div>
+          <div class="mb-3"><label class="form-label">Dirección</label><input type="text" class="form-control" id="cliDir" /></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="guardarCliente()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Proveedor -->
+  <div class="modal fade" id="modalProveedor" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloModalProveedor">Nuevo Proveedor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="provId" />
+          <div class="mb-3"><label class="form-label">Nombre *</label><input type="text" class="form-control" id="provNombre" required /></div>
+          <div class="mb-3"><label class="form-label">Documento</label><input type="text" class="form-control" id="provDoc" /></div>
+          <div class="mb-3"><label class="form-label">Teléfono</label><input type="text" class="form-control" id="provTel" /></div>
+          <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" id="provEmail" /></div>
+          <div class="mb-3"><label class="form-label">Persona de contacto</label><input type="text" class="form-control" id="provContacto" /></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="guardarProveedor()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Gasto -->
+  <div class="modal fade" id="modalGasto" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Nuevo Gasto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="gastoId" />
+          <div class="mb-3"><label class="form-label">Fecha</label><input type="date" class="form-control" id="gastoFecha" /></div>
+          <div class="mb-3">
+            <label class="form-label">Categoría</label>
+            <select class="form-select" id="gastoCat">
+              <option>Servicios</option><option>Alquiler</option><option>Sueldos</option>
+              <option>Transporte</option><option>Marketing</option><option>Impuestos</option>
+              <option>Mantenimiento</option><option>Otros</option>
+            </select>
+          </div>
+          <div class="mb-3"><label class="form-label">Descripción</label><input type="text" class="form-control" id="gastoDesc" /></div>
+          <div class="mb-3"><label class="form-label">Monto *</label><input type="number" step="0.01" class="form-control" id="gastoMonto" required /></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="guardarGasto()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Venta / Compra / Cotización / Factura (genérico con items) -->
+  <div class="modal fade" id="modalDocumento" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloModalDoc">Nuevo Documento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="docTipo" />
+          <input type="hidden" id="docId" />
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label" id="labelPersona">Cliente</label>
+              <select class="form-select" id="docPersona"></select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Fecha</label>
+              <input type="date" class="form-control" id="docFecha" />
+            </div>
+            <div class="col-md-3" id="campoValidez" style="display:none">
+              <label class="form-label">Válida hasta</label>
+              <input type="date" class="form-control" id="docValidez" />
+            </div>
+            <div class="col-md-3" id="campoPago" style="display:none">
+              <label class="form-label">Método de pago</label>
+              <select class="form-select" id="docPago">
+                <option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Crédito</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive mb-3">
+            <table class="table table-sm">
+              <thead class="table-light">
+                <tr><th style="width:40%">Producto</th><th>Cant.</th><th>Precio</th><th>Subtotal</th><th></th></tr>
+              </thead>
+              <tbody id="docItems"></tbody>
+            </table>
+          </div>
+          <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="agregarItemDoc()"><i class="bi bi-plus"></i> Agregar producto</button>
+          <div class="row justify-content-end">
+            <div class="col-md-4">
+              <div class="d-flex justify-content-between mb-1"><span>Subtotal:</span><span id="docSubtotal">$0.00</span></div>
+              <div class="d-flex justify-content-between mb-1">
+                <span>Impuesto %:</span>
+                <input type="number" class="form-control form-control-sm w-25 text-end" id="docImpuesto" value="0" onchange="calcularTotalesDoc()" />
+              </div>
+              <div class="d-flex justify-content-between mb-1"><span>Impuesto:</span><span id="docImpuestoMonto">$0.00</span></div>
+              <div class="d-flex justify-content-between fw-bold fs-5"><span>Total:</span><span id="docTotal">$0.00</span></div>
+            </div>
+          </div>
+          <div class="mb-0 mt-3">
+            <label class="form-label">Notas</label>
+            <textarea class="form-control" id="docNotas" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="guardarDocumento()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Área de impresión -->
+  <div class="print-area" id="printArea"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ===================== FIREBASE CONFIG =====================
+    const firebaseConfig = {
+      apiKey: "AIzaSyC6BgsrqVB9LLmPph2Swb9jLSNJ5KEayM8",
+      authDomain: "graphitech507.firebaseapp.com",
+      databaseURL: "https://graphitech507-default-rtdb.firebaseio.com",
+      projectId: "graphitech507",
+      storageBucket: "graphitech507.firebasestorage.app",
+      messagingSenderId: "765632830610",
+      appId: "1:765632830610:web:f94c4c303443f58b5cda4b",
+      measurementId: "G-TRDHVY5LZE"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const rootRef = firebase.database().ref();
+
+    // ===================== DATA =====================
+    // Estructura interna (arrays) que se sincroniza con Firebase
+    let db = {
+      config: { nombre: 'Graphitech', ruc: '', direccion: '', telefono: '', email: '', moneda: '$' },
+      productos: [],
+      clientes: [],
+      proveedores: [],
+      ventas: [],
+      compras: [],
+      gastos: [],
+      cotizaciones: [],
+      facturas: [],
+      movimientos: [],
+      contadores: { venta: 1, compra: 1, gasto: 1, cotizacion: 3, factura: 1, producto: 1, cliente: 1, proveedor: 1 }
+    };
+
+    let chartFinanzas = null;
+    let firebaseListo = false;
+    let guardando = false;
+    let cargandoDesdeFirebase = false;
+
+    // Convierte objeto Firebase { id: data } → array [{ id, ...data }]
+    function objToArray(obj) {
+      if (!obj) return [];
+      if (Array.isArray(obj)) return obj;
+      return Object.keys(obj).map(k => ({ id: k, ...obj[k] }));
+    }
+
+    // Convierte array → objeto Firebase { id: data sin id }
+    function arrayToObj(arr) {
+      const o = {};
+      (arr || []).forEach(item => {
+        if (!item || item.id == null) return;
+        const { id, ...rest } = item;
+        o[id] = rest;
+      });
+      return o;
+    }
+
+    // Genera ID estilo Firebase
+    function nuevoId() {
+      return rootRef.push().key;
+    }
+
+    // ---------- Cargar desde Firebase (compatible con tu estructura actual) ----------
+    function loadDB() {
+      rootRef.on('value', (snapshot) => {
+        if (guardando) return; // evitar loop
+        cargandoDesdeFirebase = true;
+        const data = snapshot.val() || {};
+
+        // === PRODUCTOS (tu nodo se llama "inventario") ===
+        db.productos = objToArray(data.inventario).map(p => ({
+          id: p.id,
+          codigo: p.codigo || '',
+          nombre: p.nombre || '',
+          categoria: p.categoria || '',
+          costo: Number(p.costo) || 0,
+          precio: Number(p.precio) || 0,
+          stock: Number(p.stock) || 0,
+          stockMin: Number(p.stockMin) || 5
+        }));
+
+        // === CLIENTES ===
+        db.clientes = objToArray(data.clientes).map(c => ({
+          id: c.id,
+          nombre: c.nombre || '',
+          doc: c.doc || c.documento || '',
+          tel: c.telefono || c.tel || '',
+          email: c.email || '',
+          dir: c.direccion || c.dir || ''
+        }));
+
+        // === PROVEEDORES ===
+        db.proveedores = objToArray(data.proveedores).map(p => ({
+          id: p.id,
+          nombre: p.nombre || '',
+          doc: p.doc || '',
+          tel: p.telefono || p.tel || '',
+          email: p.email || '',
+          contacto: p.contacto || ''
+        }));
+
+        // === COTIZACIONES (tu formato) ===
+        db.cotizaciones = objToArray(data.cotizaciones).map(c => {
+          // Buscar cliente por nombre si no hay personaId
+          let personaId = c.personaId || c.clienteId || '';
+          if (!personaId && c.cliente) {
+            const found = db.clientes.find(cl => cl.nombre === c.cliente);
+            if (found) personaId = found.id;
+          }
+          return {
+            id: c.id,
+            numero: c.numero || c.id,
+            fecha: normalizarFecha(c.fecha),
+            personaId: personaId,
+            clienteNombre: c.cliente || '',
+            items: (c.items || []).map(it => ({
+              productoId: it.productoId || '',
+              nombre: it.producto || it.nombre || '',
+              cantidad: Number(it.cantidad) || 0,
+              precio: Number(it.precio) || 0,
+              subtotal: Number(it.subtotal) || (Number(it.cantidad)||0)*(Number(it.precio)||0)
+            })),
+            subtotal: Number(c.subtotal) || Number(c.total) || 0,
+            impuestoPct: Number(c.impuestoPct) || 0,
+            impuesto: Number(c.impuesto) || 0,
+            total: Number(c.total) || 0,
+            notas: c.notas || '',
+            validez: c.validez || null,
+            estado: c.estado || 'Pendiente',
+            telefono: c.telefono || ''
+          };
+        });
+
+        // === VENTAS / COMPRAS / GASTOS / FACTURAS (nodos nuevos si no existen) ===
+        db.ventas = objToArray(data.ventas).map(mapDocumento);
+        db.compras = objToArray(data.compras).map(mapDocumento);
+        db.facturas = objToArray(data.facturas).map(mapDocumento);
+        db.gastos = objToArray(data.gastos).map(g => ({
+          id: g.id,
+          fecha: normalizarFecha(g.fecha),
+          categoria: g.categoria || 'Otros',
+          descripcion: g.descripcion || g.detalle || '',
+          monto: Number(g.monto) || 0
+        }));
+
+        // === MOVIMIENTOS ===
+        db.movimientos = objToArray(data.movimientos);
+
+        // === CONFIG ===
+        if (data.config) db.config = { ...db.config, ...data.config };
+
+        // === CONTADORES ===
+        db.contadores = {
+          venta: 1, compra: 1, gasto: 1, cotizacion: 3, factura: 1,
+          producto: 1, cliente: 1, proveedor: 1,
+          ...(data.contadores || {})
         };
 
-        // Fallback por si aún tienes archivos con espacio
-        const productsFallback = {
-            gorra: { white: 'gorra white1.png', black: 'gorra black2.png' }
+        firebaseListo = true;
+        cargandoDesdeFirebase = false;
+
+        const statusEl = document.getElementById('firebaseStatus');
+        if (statusEl) {
+          statusEl.className = 'badge bg-success';
+          statusEl.textContent = 'Firebase conectado';
+        }
+
+        // Refresco en vivo
+        const seccion = document.querySelector('.section.active')?.id;
+        if (seccion === 'dashboard') renderDashboard();
+        else if (seccion === 'ventas') renderVentas();
+        else if (seccion === 'compras') renderCompras();
+        else if (seccion === 'gastos') renderGastos();
+        else if (seccion === 'inventario') renderInventario();
+        else if (seccion === 'cotizaciones') renderCotizaciones();
+        else if (seccion === 'facturas') renderFacturas();
+        else if (seccion === 'clientes') renderClientes();
+        else if (seccion === 'proveedores') renderProveedores();
+        else if (seccion === 'config') cargarConfigForm();
+        else renderDashboard();
+
+      }, (error) => {
+        console.error('Error Firebase:', error);
+        const statusEl = document.getElementById('firebaseStatus');
+        if (statusEl) {
+          statusEl.className = 'badge bg-danger';
+          statusEl.textContent = 'Error Firebase';
+        }
+        alert('Error al conectar con Firebase.\nRevisa las Rules.\n\n' + error.message);
+      });
+    }
+
+    function mapDocumento(d) {
+      return {
+        id: d.id,
+        numero: d.numero || d.id,
+        fecha: normalizarFecha(d.fecha),
+        personaId: d.personaId || d.clienteId || d.proveedorId || '',
+        items: (d.items || []).map(it => ({
+          productoId: it.productoId || '',
+          nombre: it.producto || it.nombre || '',
+          cantidad: Number(it.cantidad) || 0,
+          precio: Number(it.precio) || 0,
+          subtotal: Number(it.subtotal) || 0
+        })),
+        subtotal: Number(d.subtotal) || 0,
+        impuestoPct: Number(d.impuestoPct) || 0,
+        impuesto: Number(d.impuesto) || 0,
+        total: Number(d.total) || 0,
+        notas: d.notas || '',
+        pago: d.pago || 'Efectivo',
+        validez: d.validez || null,
+        estado: d.estado || 'Completado',
+        facturaId: d.facturaId || null,
+        origenVentaId: d.origenVentaId || null
+      };
+    }
+
+    function normalizarFecha(f) {
+      if (!f) return hoy();
+      // Si viene "08/29/2026, 3:18:51 p. m." → intentar parsear
+      if (typeof f === 'string' && f.includes('/')) {
+        try {
+          const d = new Date(f);
+          if (!isNaN(d)) return d.toISOString().slice(0, 10);
+        } catch(e) {}
+      }
+      if (typeof f === 'string' && f.length >= 10) return f.slice(0, 10);
+      return hoy();
+    }
+
+    // ---------- Guardar en Firebase (mantiene tu estructura) ----------
+    function saveDB() {
+      if (!firebaseListo || guardando || cargandoDesdeFirebase) return;
+      guardando = true;
+
+      // Productos → nodo "inventario" (como ya tienes)
+      const inventarioObj = {};
+      db.productos.forEach(p => {
+        inventarioObj[p.id] = {
+          nombre: p.nombre,
+          categoria: p.categoria || '',
+          costo: p.costo || 0,
+          precio: p.precio || 0,
+          stock: p.stock || 0,
+          codigo: p.codigo || '',
+          stockMin: p.stockMin || 5
         };
+      });
 
-        let currentType = 'camiseta';
-        let currentColor = 'white';
-        let currentView = 'frente';
-        let duenoSueter = 'nuestro';
-        let nextId = 1;
-        const designs = { frente: [], espalda: [] };
-        let selectedId = null;
+      // Clientes (campos compatibles con lo que ya tienes)
+      const clientesObj = {};
+      db.clientes.forEach(c => {
+        clientesObj[c.id] = {
+          nombre: c.nombre,
+          telefono: c.tel || '',
+          email: c.email || '',
+          direccion: c.dir || '',
+          doc: c.doc || ''
+        };
+      });
 
-        function getSizeInfo(scale) {
-            if (scale < UMBRAL_GRANDE) return { texto: 'Insignia', color: '#22c55e', costo: PRECIO_INSIGNIA };
-            return { texto: 'Grande', color: '#f59e0b', costo: PRECIO_GRANDE };
-        }
+      // Proveedores
+      const proveedoresObj = {};
+      db.proveedores.forEach(p => {
+        proveedoresObj[p.id] = {
+          nombre: p.nombre,
+          telefono: p.tel || '',
+          email: p.email || '',
+          doc: p.doc || '',
+          contacto: p.contacto || ''
+        };
+      });
 
-        function calcularPrecio() {
-            const list = designs[currentView];
-            if (list.length === 0) {
-                document.getElementById('price-display').textContent = '$0';
-                document.getElementById('size-badge').textContent = 'Sin diseños';
-                document.getElementById('price-detail').textContent = 'Sube diseños para ver el precio.';
-                return 0;
-            }
-            let maxScale = 0;
-            list.forEach(d => { if (d.scale > maxScale) maxScale = d.scale; });
-            const info = getSizeInfo(maxScale);
-            let precio = info.costo;
-            if (currentType === 'sueter' && duenoSueter === 'nuestro') precio += EXTRA_SUETER;
-            document.getElementById('price-display').textContent = '$' + precio;
-            document.getElementById('size-badge').textContent = info.texto + ' (' + maxScale + '%)';
-            document.getElementById('size-badge').style.background = info.color;
-            let html = `Diseños en ${currentView}: <b>${list.length}</b><br>`;
-            html += `Tamaño mayor: ${info.texto} → $${info.costo}`;
-            if (currentType === 'sueter' && duenoSueter === 'nuestro') html += `<br>Suéter nuestro → +$${EXTRA_SUETER}`;
-            html += `<br><b>Total: $${precio}</b>`;
-            document.getElementById('price-detail').innerHTML = html;
-            return precio;
-        }
+      // Cotizaciones (formato compatible)
+      const cotizacionesObj = {};
+      db.cotizaciones.forEach(c => {
+        const cli = db.clientes.find(x => x.id == c.personaId);
+        cotizacionesObj[c.id] = {
+          numero: c.numero,
+          fecha: c.fecha,
+          cliente: cli ? cli.nombre : (c.clienteNombre || ''),
+          telefono: cli ? cli.tel : (c.telefono || ''),
+          personaId: c.personaId || '',
+          items: (c.items || []).map(it => ({
+            productoId: it.productoId,
+            producto: it.nombre,
+            cantidad: it.cantidad,
+            precio: it.precio,
+            subtotal: it.subtotal
+          })),
+          subtotal: c.subtotal,
+          impuestoPct: c.impuestoPct || 0,
+          impuesto: c.impuesto || 0,
+          total: c.total,
+          notas: c.notas || '',
+          validez: c.validez || null,
+          estado: c.estado || 'Pendiente'
+        };
+      });
 
-        function setDuenoSueter(quien) {
-            duenoSueter = quien;
-            document.getElementById('btn-sueter-nuestro').classList.toggle('active', quien === 'nuestro');
-            document.getElementById('btn-sueter-cliente').classList.toggle('active', quien === 'cliente');
-            calcularPrecio();
-        }
+      const payload = {
+        inventario: inventarioObj,
+        clientes: clientesObj,
+        proveedores: proveedoresObj,
+        cotizaciones: cotizacionesObj,
+        ventas: arrayToObj(db.ventas),
+        compras: arrayToObj(db.compras),
+        facturas: arrayToObj(db.facturas),
+        gastos: arrayToObj(db.gastos),
+        movimientos: arrayToObj(db.movimientos),
+        config: db.config,
+        contadores: db.contadores
+      };
 
-        function setView(view) {
-            currentView = view;
-            document.getElementById('btn-frente').classList.toggle('active', view === 'frente');
-            document.getElementById('btn-espalda').classList.toggle('active', view === 'espalda');
-            document.getElementById('upload-label').textContent = '+ Agregar diseño (' + (view === 'frente' ? 'Frente' : 'Espalda') + ')';
-            document.getElementById('design-side-info').textContent = 'Cara actual: ' + (view === 'frente' ? 'Frente' : 'Espalda');
-            selectedId = null;
-            updateShirtImage();
-            renderDesigns();
-            renderDesignsList();
-            calcularPrecio();
-        }
-
-        function updateShirtImage() {
-            const img = document.getElementById('shirtImage');
-            if (currentType === 'sueter') {
-                const data = products.sueter[currentColor];
-                if (data) img.src = data[currentView];
-            } else {
-                let src = products[currentType][currentColor];
-                img.src = src;
-                img.onerror = () => {
-                    if (productsFallback[currentType]) {
-                        img.src = productsFallback[currentType][currentColor];
-                    }
-                };
-            }
-        }
-
-        function setProductType(type) {
-            currentType = type;
-            currentView = 'frente';
-            document.getElementById('btn-camiseta').classList.toggle('active', type === 'camiseta');
-            document.getElementById('btn-sueter').classList.toggle('active', type === 'sueter');
-            document.getElementById('btn-gorra').classList.toggle('active', type === 'gorra');
-            document.getElementById('color-picker-camiseta').style.display = type === 'camiseta' ? 'flex' : 'none';
-            document.getElementById('color-picker-sueter').style.display = type === 'sueter' ? 'flex' : 'none';
-            document.getElementById('color-picker-gorra').style.display = type === 'gorra' ? 'flex' : 'none';
-            document.getElementById('opcion-sueter').style.display = type === 'sueter' ? 'block' : 'none';
-            document.getElementById('view-toggle').classList.toggle('show', type === 'sueter');
-            document.getElementById('btn-frente').classList.add('active');
-            document.getElementById('btn-espalda').classList.remove('active');
-            document.getElementById('upload-label').textContent = '+ Agregar diseño (Frente)';
-            document.getElementById('design-side-info').textContent = 'Cara actual: Frente';
-            document.getElementById('color-title').textContent = type === 'sueter' ? '2. Color del Suéter' : (type === 'gorra' ? '2. Color de la Gorra' : '2. Color de la Tela');
-            document.getElementById('print-area').classList.toggle('gorra', type === 'gorra');
-            currentColor = 'white';
-            const firstBtn = document.querySelector(`#color-picker-${type} .color-btn`);
-            setShirtColor('white', firstBtn);
-            selectedId = null;
-            renderDesigns();
-            renderDesignsList();
-            calcularPrecio();
-        }
-
-        function setShirtColor(name, btn) {
-            currentColor = name;
-            updateShirtImage();
-            const picker = document.getElementById(`color-picker-${currentType}`);
-            picker.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-        }
-
-        const printArea = document.getElementById('print-area');
-        const designsListEl = document.getElementById('designs-list');
-
-        function renderDesigns() {
-            printArea.innerHTML = '';
-            const list = designs[currentView];
-            list.forEach(d => {
-                const img = document.createElement('img');
-                img.src = d.src;
-                img.className = 'user-design';
-                img.dataset.id = d.id;
-                img.style.transform = `translate(${d.posX}px, ${d.posY}px) scale(${d.scale / 100})`;
-                img.addEventListener('mousedown', e => {
-                    e.stopPropagation();
-                    selectDesign(d.id);
-                    startDrag(e, d.id);
-                });
-                printArea.appendChild(img);
-            });
-        }
-
-        function renderDesignsList() {
-            designsListEl.innerHTML = '';
-            const list = designs[currentView];
-            if (list.length === 0) {
-                designsListEl.innerHTML = '<div style="padding:8px;color:#71717a;font-size:0.75rem;">Ningún diseño en esta cara</div>';
-                return;
-            }
-            list.forEach(d => {
-                const item = document.createElement('div');
-                item.className = 'design-item' + (d.id === selectedId ? ' active' : '');
-                item.innerHTML = `
-                    <img src="${d.src}">
-                    <span class="name">${d.name || 'Diseño ' + d.id}</span>
-                    <button class="del" onclick="event.stopPropagation(); deleteDesign(${d.id})">×</button>
-                `;
-                item.onclick = () => selectDesign(d.id);
-                designsListEl.appendChild(item);
-            });
-        }
-
-        function selectDesign(id) {
-            selectedId = id;
-            const d = designs[currentView].find(x => x.id === id);
-            if (!d) return;
-            scaleRange.value = d.scale;
-            scaleNum.value = d.scale;
-            posXRange.value = d.posX;
-            posXNum.value = d.posX;
-            posYRange.value = d.posY;
-            posYNum.value = d.posY;
-            renderDesigns();
-            renderDesignsList();
-        }
-
-        function deleteDesign(id) {
-            designs[currentView] = designs[currentView].filter(d => d.id !== id);
-            if (selectedId === id) selectedId = null;
-            renderDesigns();
-            renderDesignsList();
-            calcularPrecio();
-        }
-
-        function removeSelectedDesign() {
-            if (selectedId === null) { alert('Selecciona un diseño primero'); return; }
-            deleteDesign(selectedId);
-        }
-
-        function removeAllDesigns() {
-            if (!confirm('¿Eliminar todos los diseños de esta cara?')) return;
-            designs[currentView] = [];
-            selectedId = null;
-            renderDesigns();
-            renderDesignsList();
-            calcularPrecio();
-        }
-
-        document.getElementById('file-upload').addEventListener('change', e => {
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    const id = nextId++;
-                    designs[currentView].push({
-                        id: id, src: ev.target.result, name: file.name,
-                        scale: 100, posX: 0, posY: 0
-                    });
-                    selectedId = id;
-                    renderDesigns();
-                    renderDesignsList();
-                    selectDesign(id);
-                    calcularPrecio();
-                };
-                reader.readAsDataURL(file);
-            });
-            e.target.value = '';
+      rootRef.update(payload)
+        .then(() => { guardando = false; })
+        .catch((error) => {
+          guardando = false;
+          console.error('Error al guardar:', error);
+          alert('Error al guardar en Firebase: ' + error.message);
         });
+    }
 
-        function removeBackground() {
-            if (selectedId === null) { alert('Selecciona un diseño primero'); return; }
-            const d = designs[currentView].find(x => x.id === selectedId);
-            if (!d) return;
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = img.width; canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
-                for (let i = 0; i < data.length; i += 4) {
-                    if (data[i] > 230 && data[i+1] > 230 && data[i+2] > 230) data[i+3] = 0;
-                }
-                ctx.putImageData(imageData, 0, 0);
-                d.src = canvas.toDataURL('image/png');
-                renderDesigns();
-                renderDesignsList();
-            };
-            img.src = d.src;
+    function money(n) {
+      const m = db.config.moneda || '$';
+      return m + Number(n || 0).toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // ID real de Firebase (push key) + número legible
+    function nextId(tipo) {
+      return nuevoId();
+    }
+
+    function nextNumero(tipo) {
+      const prefixes = {
+        venta: 'VEN', compra: 'COM', gasto: 'GAS',
+        cotizacion: 'COT', factura: 'FAC',
+        producto: 'PRD', cliente: 'CLI', proveedor: 'PRO'
+      };
+      const num = db.contadores[tipo] || 1;
+      db.contadores[tipo] = num + 1;
+      const pref = prefixes[tipo] || 'DOC';
+      return pref + '-' + String(num).padStart(4, '0');
+    }
+
+    function hoy() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    // ===================== NAV =====================
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('show');
+      document.getElementById('overlay').classList.toggle('show');
+    }
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        const sec = el.dataset.section;
+        document.getElementById(sec).classList.add('active');
+        document.getElementById('pageTitle').textContent = el.textContent.trim();
+        if (window.innerWidth < 992) toggleSidebar();
+        if (sec === 'dashboard') renderDashboard();
+        if (sec === 'ventas') renderVentas();
+        if (sec === 'compras') renderCompras();
+        if (sec === 'gastos') renderGastos();
+        if (sec === 'inventario') renderInventario();
+        if (sec === 'cotizaciones') renderCotizaciones();
+        if (sec === 'facturas') renderFacturas();
+        if (sec === 'clientes') renderClientes();
+        if (sec === 'proveedores') renderProveedores();
+        if (sec === 'config') cargarConfigForm();
+      });
+    });
+
+    // ===================== PRODUCTOS =====================
+    function abrirModalProducto(id = null) {
+      document.getElementById('prodId').value = id || '';
+      document.getElementById('tituloModalProducto').textContent = id ? 'Editar Producto' : 'Nuevo Producto';
+      if (id) {
+        const p = db.productos.find(x => x.id == id);
+        if (!p) return;
+        document.getElementById('prodCodigo').value = p.codigo || '';
+        document.getElementById('prodNombre').value = p.nombre || '';
+        document.getElementById('prodCategoria').value = p.categoria || '';
+        document.getElementById('prodCosto').value = p.costo || 0;
+        document.getElementById('prodPrecio').value = p.precio || 0;
+        document.getElementById('prodStock').value = p.stock || 0;
+        document.getElementById('prodStockMin').value = p.stockMin || 5;
+      } else {
+        document.getElementById('prodCodigo').value = '';
+        document.getElementById('prodNombre').value = '';
+        document.getElementById('prodCategoria').value = '';
+        document.getElementById('prodCosto').value = 0;
+        document.getElementById('prodPrecio').value = 0;
+        document.getElementById('prodStock').value = 0;
+        document.getElementById('prodStockMin').value = 5;
+      }
+      new bootstrap.Modal(document.getElementById('modalProducto')).show();
+    }
+    function guardarProducto() {
+      const nombre = document.getElementById('prodNombre').value.trim();
+      if (!nombre) return alert('El nombre es obligatorio');
+      const id = document.getElementById('prodId').value;
+      const data = {
+        codigo: document.getElementById('prodCodigo').value.trim(),
+        nombre,
+        categoria: document.getElementById('prodCategoria').value.trim(),
+        costo: parseFloat(document.getElementById('prodCosto').value) || 0,
+        precio: parseFloat(document.getElementById('prodPrecio').value) || 0,
+        stock: parseInt(document.getElementById('prodStock').value) || 0,
+        stockMin: parseInt(document.getElementById('prodStockMin').value) || 0
+      };
+      if (id) {
+        const idx = db.productos.findIndex(x => x.id == id);
+        if (idx >= 0) db.productos[idx] = { ...db.productos[idx], ...data };
+      } else {
+        data.id = nextId('producto');
+        db.productos.push(data);
+      }
+      saveDB();
+      bootstrap.Modal.getInstance(document.getElementById('modalProducto')).hide();
+      renderInventario();
+    }
+    function eliminarProducto(id) {
+      if (!confirm('¿Eliminar este producto?')) return;
+      db.productos = db.productos.filter(x => x.id != id);
+      saveDB();
+      renderInventario();
+    }
+    function renderInventario() {
+      const tbody = document.getElementById('tablaInventario');
+      if (!db.productos.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="bi bi-box"></i><br>No hay productos</td></tr>';
+        return;
+      }
+      tbody.innerHTML = db.productos.map(p => {
+        let badge = 'badge-stock-ok';
+        if (p.stock <= 0) badge = 'badge-stock-out';
+        else if (p.stock <= (p.stockMin || 0)) badge = 'badge-stock-low';
+        return `<tr>
+          <td>${p.codigo || '-'}</td>
+          <td>${p.nombre}</td>
+          <td>${p.categoria || '-'}</td>
+          <td><span class="badge ${badge}">${p.stock}</span></td>
+          <td>${money(p.costo)}</td>
+          <td>${money(p.precio)}</td>
+          <td>${money(p.stock * p.costo)}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary btn-action" onclick="abrirModalProducto(${p.id})"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-sm btn-outline-danger btn-action" onclick="eliminarProducto(${p.id})"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ===================== CLIENTES =====================
+    function abrirModalCliente(id = null) {
+      document.getElementById('cliId').value = id || '';
+      document.getElementById('tituloModalCliente').textContent = id ? 'Editar Cliente' : 'Nuevo Cliente';
+      if (id) {
+        const c = db.clientes.find(x => x.id == id);
+        if (!c) return;
+        document.getElementById('cliNombre').value = c.nombre || '';
+        document.getElementById('cliDoc').value = c.doc || '';
+        document.getElementById('cliTel').value = c.tel || '';
+        document.getElementById('cliEmail').value = c.email || '';
+        document.getElementById('cliDir').value = c.dir || '';
+      } else {
+        ['cliNombre','cliDoc','cliTel','cliEmail','cliDir'].forEach(id => document.getElementById(id).value = '');
+      }
+      new bootstrap.Modal(document.getElementById('modalCliente')).show();
+    }
+    function guardarCliente() {
+      const nombre = document.getElementById('cliNombre').value.trim();
+      if (!nombre) return alert('El nombre es obligatorio');
+      const id = document.getElementById('cliId').value;
+      const data = {
+        nombre,
+        doc: document.getElementById('cliDoc').value.trim(),
+        tel: document.getElementById('cliTel').value.trim(),
+        email: document.getElementById('cliEmail').value.trim(),
+        dir: document.getElementById('cliDir').value.trim()
+      };
+      if (id) {
+        const idx = db.clientes.findIndex(x => x.id == id);
+        if (idx >= 0) db.clientes[idx] = { ...db.clientes[idx], ...data };
+      } else {
+        data.id = nextId('cliente');
+        db.clientes.push(data);
+      }
+      saveDB();
+      bootstrap.Modal.getInstance(document.getElementById('modalCliente')).hide();
+      renderClientes();
+    }
+    function eliminarCliente(id) {
+      if (!confirm('¿Eliminar este cliente?')) return;
+      db.clientes = db.clientes.filter(x => x.id != id);
+      saveDB();
+      renderClientes();
+    }
+    function renderClientes() {
+      const tbody = document.getElementById('tablaClientes');
+      if (!db.clientes.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="bi bi-people"></i><br>No hay clientes</td></tr>';
+        return;
+      }
+      tbody.innerHTML = db.clientes.map(c => `<tr>
+        <td>${c.nombre}</td><td>${c.doc||'-'}</td><td>${c.tel||'-'}</td><td>${c.email||'-'}</td><td>${c.dir||'-'}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary btn-action" onclick="abrirModalCliente(${c.id})"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger btn-action" onclick="eliminarCliente(${c.id})"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`).join('');
+    }
+
+    // ===================== PROVEEDORES =====================
+    function abrirModalProveedor(id = null) {
+      document.getElementById('provId').value = id || '';
+      document.getElementById('tituloModalProveedor').textContent = id ? 'Editar Proveedor' : 'Nuevo Proveedor';
+      if (id) {
+        const p = db.proveedores.find(x => x.id == id);
+        if (!p) return;
+        document.getElementById('provNombre').value = p.nombre || '';
+        document.getElementById('provDoc').value = p.doc || '';
+        document.getElementById('provTel').value = p.tel || '';
+        document.getElementById('provEmail').value = p.email || '';
+        document.getElementById('provContacto').value = p.contacto || '';
+      } else {
+        ['provNombre','provDoc','provTel','provEmail','provContacto'].forEach(id => document.getElementById(id).value = '');
+      }
+      new bootstrap.Modal(document.getElementById('modalProveedor')).show();
+    }
+    function guardarProveedor() {
+      const nombre = document.getElementById('provNombre').value.trim();
+      if (!nombre) return alert('El nombre es obligatorio');
+      const id = document.getElementById('provId').value;
+      const data = {
+        nombre,
+        doc: document.getElementById('provDoc').value.trim(),
+        tel: document.getElementById('provTel').value.trim(),
+        email: document.getElementById('provEmail').value.trim(),
+        contacto: document.getElementById('provContacto').value.trim()
+      };
+      if (id) {
+        const idx = db.proveedores.findIndex(x => x.id == id);
+        if (idx >= 0) db.proveedores[idx] = { ...db.proveedores[idx], ...data };
+      } else {
+        data.id = nextId('proveedor');
+        db.proveedores.push(data);
+      }
+      saveDB();
+      bootstrap.Modal.getInstance(document.getElementById('modalProveedor')).hide();
+      renderProveedores();
+    }
+    function eliminarProveedor(id) {
+      if (!confirm('¿Eliminar este proveedor?')) return;
+      db.proveedores = db.proveedores.filter(x => x.id != id);
+      saveDB();
+      renderProveedores();
+    }
+    function renderProveedores() {
+      const tbody = document.getElementById('tablaProveedores');
+      if (!db.proveedores.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="bi bi-truck"></i><br>No hay proveedores</td></tr>';
+        return;
+      }
+      tbody.innerHTML = db.proveedores.map(p => `<tr>
+        <td>${p.nombre}</td><td>${p.doc||'-'}</td><td>${p.tel||'-'}</td><td>${p.email||'-'}</td><td>${p.contacto||'-'}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary btn-action" onclick="abrirModalProveedor(${p.id})"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger btn-action" onclick="eliminarProveedor(${p.id})"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`).join('');
+    }
+
+    // ===================== GASTOS =====================
+    function abrirModalGasto(id = null) {
+      document.getElementById('gastoId').value = id || '';
+      if (id) {
+        const g = db.gastos.find(x => x.id == id);
+        if (!g) return;
+        document.getElementById('gastoFecha').value = g.fecha;
+        document.getElementById('gastoCat').value = g.categoria;
+        document.getElementById('gastoDesc').value = g.descripcion || '';
+        document.getElementById('gastoMonto').value = g.monto;
+      } else {
+        document.getElementById('gastoFecha').value = hoy();
+        document.getElementById('gastoCat').value = 'Servicios';
+        document.getElementById('gastoDesc').value = '';
+        document.getElementById('gastoMonto').value = '';
+      }
+      new bootstrap.Modal(document.getElementById('modalGasto')).show();
+    }
+    function guardarGasto() {
+      const monto = parseFloat(document.getElementById('gastoMonto').value);
+      if (!monto || monto <= 0) return alert('Ingresa un monto válido');
+      const id = document.getElementById('gastoId').value;
+      const data = {
+        fecha: document.getElementById('gastoFecha').value || hoy(),
+        categoria: document.getElementById('gastoCat').value,
+        descripcion: document.getElementById('gastoDesc').value.trim(),
+        monto
+      };
+      if (id) {
+        const idx = db.gastos.findIndex(x => x.id == id);
+        if (idx >= 0) db.gastos[idx] = { ...db.gastos[idx], ...data };
+      } else {
+        data.id = nextId('gasto');
+        db.gastos.push(data);
+      }
+      saveDB();
+      bootstrap.Modal.getInstance(document.getElementById('modalGasto')).hide();
+      renderGastos();
+    }
+    function eliminarGasto(id) {
+      if (!confirm('¿Eliminar este gasto?')) return;
+      db.gastos = db.gastos.filter(x => x.id != id);
+      saveDB();
+      renderGastos();
+    }
+    function renderGastos() {
+      const tbody = document.getElementById('tablaGastos');
+      const list = [...db.gastos].sort((a,b) => b.fecha.localeCompare(a.fecha));
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="bi bi-cash"></i><br>No hay gastos</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(g => `<tr>
+        <td>${g.id}</td><td>${g.fecha}</td><td>${g.categoria}</td><td>${g.descripcion||'-'}</td><td>${money(g.monto)}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary btn-action" onclick="abrirModalGasto(${g.id})"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger btn-action" onclick="eliminarGasto(${g.id})"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`).join('');
+    }
+
+    // ===================== DOCUMENTOS (Venta, Compra, Cotización, Factura) =====================
+    function abrirModalVenta() { abrirModalDoc('venta'); }
+    function abrirModalCompra() { abrirModalDoc('compra'); }
+    function abrirModalCotizacion() { abrirModalDoc('cotizacion'); }
+    function abrirModalFactura() { abrirModalDoc('factura'); }
+
+    function abrirModalDoc(tipo, id = null) {
+      document.getElementById('docTipo').value = tipo;
+      document.getElementById('docId').value = id || '';
+      const titles = { venta: 'Nueva Venta', compra: 'Nueva Compra', cotizacion: 'Nueva Cotización', factura: 'Nueva Factura' };
+      document.getElementById('tituloModalDoc').textContent = titles[tipo];
+      document.getElementById('labelPersona').textContent = (tipo === 'compra') ? 'Proveedor' : 'Cliente';
+      document.getElementById('campoValidez').style.display = tipo === 'cotizacion' ? 'block' : 'none';
+      document.getElementById('campoPago').style.display = (tipo === 'venta' || tipo === 'factura') ? 'block' : 'none';
+
+      // Personas
+      const sel = document.getElementById('docPersona');
+      const lista = tipo === 'compra' ? db.proveedores : db.clientes;
+      sel.innerHTML = '<option value="">-- Seleccionar --</option>' + lista.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+
+      document.getElementById('docFecha').value = hoy();
+      document.getElementById('docValidez').value = '';
+      document.getElementById('docPago').value = 'Efectivo';
+      document.getElementById('docImpuesto').value = 0;
+      document.getElementById('docNotas').value = '';
+      document.getElementById('docItems').innerHTML = '';
+      agregarItemDoc();
+      calcularTotalesDoc();
+      new bootstrap.Modal(document.getElementById('modalDocumento')).show();
+    }
+
+    function agregarItemDoc() {
+      const tbody = document.getElementById('docItems');
+      const tr = document.createElement('tr');
+      const opts = db.productos.map(p => `<option value="${p.id}" data-precio="${p.precio}" data-costo="${p.costo}">${p.nombre} (Stock: ${p.stock})</option>`).join('');
+      tr.innerHTML = `
+        <td><select class="form-select form-select-sm item-prod" onchange="onProdChange(this)">${opts || '<option value="">Sin productos</option>'}</select></td>
+        <td><input type="number" class="form-control form-control-sm item-cant" value="1" min="1" onchange="calcularTotalesDoc()" style="width:70px" /></td>
+        <td><input type="number" step="0.01" class="form-control form-control-sm item-precio" value="0" onchange="calcularTotalesDoc()" style="width:100px" /></td>
+        <td class="item-subtotal">$0.00</td>
+        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove();calcularTotalesDoc()"><i class="bi bi-x"></i></button></td>
+      `;
+      tbody.appendChild(tr);
+      const sel = tr.querySelector('.item-prod');
+      if (sel.options.length) onProdChange(sel);
+    }
+    function onProdChange(sel) {
+      const opt = sel.selectedOptions[0];
+      if (!opt) return;
+      const tipo = document.getElementById('docTipo').value;
+      const precio = tipo === 'compra' ? (opt.dataset.costo || 0) : (opt.dataset.precio || 0);
+      sel.closest('tr').querySelector('.item-precio').value = precio;
+      calcularTotalesDoc();
+    }
+    function calcularTotalesDoc() {
+      let sub = 0;
+      document.querySelectorAll('#docItems tr').forEach(tr => {
+        const cant = parseFloat(tr.querySelector('.item-cant')?.value) || 0;
+        const precio = parseFloat(tr.querySelector('.item-precio')?.value) || 0;
+        const st = cant * precio;
+        sub += st;
+        const cell = tr.querySelector('.item-subtotal');
+        if (cell) cell.textContent = money(st);
+      });
+      const impPct = parseFloat(document.getElementById('docImpuesto').value) || 0;
+      const imp = sub * (impPct / 100);
+      document.getElementById('docSubtotal').textContent = money(sub);
+      document.getElementById('docImpuestoMonto').textContent = money(imp);
+      document.getElementById('docTotal').textContent = money(sub + imp);
+    }
+
+    function getItemsFromForm() {
+      const items = [];
+      document.querySelectorAll('#docItems tr').forEach(tr => {
+        const prodId = tr.querySelector('.item-prod')?.value;
+        const cant = parseInt(tr.querySelector('.item-cant')?.value) || 0;
+        const precio = parseFloat(tr.querySelector('.item-precio')?.value) || 0;
+        if (prodId && cant > 0) {
+          const prod = db.productos.find(p => p.id == prodId);
+          items.push({ productoId: +prodId, nombre: prod?.nombre || '', cantidad: cant, precio, subtotal: cant * precio });
         }
+      });
+      return items;
+    }
 
-        const scaleRange = document.getElementById('scale');
-        const scaleNum = document.getElementById('scale-num');
-        const posXRange = document.getElementById('posX');
-        const posXNum = document.getElementById('posX-num');
-        const posYRange = document.getElementById('posY');
-        const posYNum = document.getElementById('posY-num');
-
-        function updateSelectedTransform() {
-            if (selectedId === null) return;
-            const d = designs[currentView].find(x => x.id === selectedId);
-            if (!d) return;
-            d.scale = parseFloat(scaleRange.value);
-            d.posX = parseFloat(posXRange.value);
-            d.posY = parseFloat(posYRange.value);
-            renderDesigns();
-            calcularPrecio();
-        }
-
-        function linkInputs(range, num) {
-            range.addEventListener('input', () => { num.value = range.value; updateSelectedTransform(); });
-            num.addEventListener('input', () => { range.value = num.value; updateSelectedTransform(); });
-        }
-        linkInputs(scaleRange, scaleNum);
-        linkInputs(posXRange, posXNum);
-        linkInputs(posYRange, posYNum);
-
-        let isDragging = false, dragId = null, startMX, startMY, initX, initY;
-        function startDrag(e, id) {
-            isDragging = true; dragId = id;
-            startMX = e.clientX; startMY = e.clientY;
-            const d = designs[currentView].find(x => x.id === id);
-            initX = d.posX; initY = d.posY;
-        }
-
-        window.addEventListener('mousemove', e => {
-            if (isDragging && dragId !== null) {
-                const d = designs[currentView].find(x => x.id === dragId);
-                if (!d) return;
-                d.posX = Math.max(-400, Math.min(400, initX + (e.clientX - startMX)));
-                d.posY = Math.max(-400, Math.min(400, initY + (e.clientY - startMY)));
-                posXRange.value = d.posX; posXNum.value = d.posX;
-                posYRange.value = d.posY; posYNum.value = d.posY;
-                renderDesigns();
+    function actualizarStock(items, operacion) {
+      // operacion: 'restar' | 'sumar'
+      for (const it of items) {
+        const p = db.productos.find(x => x.id == it.productoId);
+        if (!p) continue;
+        if (operacion === 'restar') {
+          if (p.stock < it.cantidad) {
+            if (!confirm(`Stock insuficiente de "${p.nombre}" (hay ${p.stock}). ¿Continuar de todos modos?`)) {
+              return false; // abortar
             }
-            if (isRotating) {
-                const dx = e.clientX - rotStartX, dy = e.clientY - rotStartY;
-                rotY = startRotY + dx * 0.35;
-                rotX = Math.max(-28, Math.min(28, startRotX - dy * 0.35));
-                rotY = Math.max(-35, Math.min(35, rotY));
-                mockup.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-            }
-        });
-
-        window.addEventListener('mouseup', () => { isDragging = false; dragId = null; isRotating = false; });
-
-        const viewport = document.getElementById('viewport');
-        const mockup = document.getElementById('mockup');
-        let isRotating = false, rotStartX = 0, rotStartY = 0, rotX = -8, rotY = 0, startRotX = 0, startRotY = 0;
-
-        viewport.addEventListener('mousedown', e => {
-            if (e.target.classList.contains('user-design')) return;
-            isRotating = true; rotStartX = e.clientX; rotStartY = e.clientY;
-            startRotX = rotX; startRotY = rotY;
-        });
-
-        function reset3D() {
-            rotX = -8; rotY = 0;
-            mockup.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+          }
+          p.stock = Math.max(0, p.stock - it.cantidad);
+        } else if (operacion === 'sumar') {
+          p.stock += it.cantidad;
         }
-        reset3D();
+      }
+      return true;
+    }
 
-        viewport.addEventListener('wheel', e => {
-            if (selectedId === null) return;
-            e.preventDefault();
-            let cur = parseFloat(scaleRange.value);
-            cur += e.deltaY < 0 ? 8 : -8;
-            cur = Math.max(5, Math.min(800, cur));
-            scaleRange.value = cur; scaleNum.value = cur;
-            updateSelectedTransform();
-        }, { passive: false });
+    function refrescarTodo() {
+      // Actualización en vivo de todas las vistas relevantes
+      const seccionActiva = document.querySelector('.section.active')?.id;
+      renderInventario();
+      if (seccionActiva === 'dashboard' || true) renderDashboard();
+      if (seccionActiva === 'ventas') renderVentas();
+      if (seccionActiva === 'compras') renderCompras();
+      if (seccionActiva === 'cotizaciones') renderCotizaciones();
+      if (seccionActiva === 'facturas') renderFacturas();
+    }
 
-        // ===================== CARGA SEGURA DE IMÁGENES =====================
-        function loadImage(src) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                // Solo crossOrigin en imágenes externas http/https
-                if (src.startsWith('http://') || src.startsWith('https://')) {
-                    img.crossOrigin = 'anonymous';
-                }
-                img.onload = () => resolve(img);
-                img.onerror = () => reject(new Error('No se pudo cargar: ' + src));
-                img.src = src;
-            });
+    function guardarDocumento() {
+      const tipo = document.getElementById('docTipo').value;
+      const items = getItemsFromForm();
+      if (!items.length) return alert('Agrega al menos un producto');
+      const personaId = document.getElementById('docPersona').value;
+      if (!personaId) return alert('Selecciona ' + (tipo === 'compra' ? 'proveedor' : 'cliente'));
+
+      let sub = 0;
+      items.forEach(i => sub += i.subtotal);
+      const impPct = parseFloat(document.getElementById('docImpuesto').value) || 0;
+      const impuesto = sub * (impPct / 100);
+      const total = sub + impuesto;
+
+      const data = {
+        fecha: document.getElementById('docFecha').value || hoy(),
+        personaId: +personaId,
+        items,
+        subtotal: sub,
+        impuestoPct: impPct,
+        impuesto,
+        total,
+        notas: document.getElementById('docNotas').value.trim(),
+        pago: document.getElementById('docPago').value,
+        validez: document.getElementById('docValidez').value || null,
+        estado: tipo === 'cotizacion' ? 'Pendiente' : 'Completado'
+      };
+
+      // ===== CONTROL DE INVENTARIO =====
+      // Cotizaciones: NO suman ni restan stock
+      // Compra: SUMA stock
+      // Venta / Factura: RESTA stock
+
+      if (tipo === 'compra') {
+        if (!actualizarStock(items, 'sumar')) return;
+      } else if (tipo === 'venta' || tipo === 'factura') {
+        if (!actualizarStock(items, 'restar')) return;
+      }
+      // tipo === 'cotizacion' → no se toca el inventario
+
+      const keyMap = { venta: 'ventas', compra: 'compras', cotizacion: 'cotizaciones', factura: 'facturas' };
+      const contMap = { venta: 'venta', compra: 'compra', cotizacion: 'cotizacion', factura: 'factura' };
+
+      data.id = nextId(contMap[tipo]);
+      data.numero = nextNumero(contMap[tipo]);
+      db[keyMap[tipo]].push(data);
+
+      // ===== VENTA GENERA FACTURA AUTOMÁTICAMENTE =====
+      if (tipo === 'venta') {
+        const factura = {
+          ...JSON.parse(JSON.stringify(data)),
+          id: nextId('factura'),
+          numero: nextNumero('factura'),
+          estado: 'Completado',
+          origenVentaId: data.id,
+          notas: (data.notas ? data.notas + ' | ' : '') + 'Generada automáticamente desde Venta ' + data.numero
+        };
+        db.facturas.push(factura);
+        data.facturaId = factura.id;
+      }
+
+      saveDB();
+      bootstrap.Modal.getInstance(document.getElementById('modalDocumento')).hide();
+
+      // Refresco en vivo
+      if (tipo === 'venta') {
+        renderVentas();
+        renderFacturas();
+      } else if (tipo === 'compra') {
+        renderCompras();
+      } else if (tipo === 'cotizacion') {
+        renderCotizaciones();
+      } else if (tipo === 'factura') {
+        renderFacturas();
+      }
+
+      // Siempre actualizar inventario y dashboard
+      renderInventario();
+      renderDashboard();
+
+      if (tipo === 'venta') {
+        alert('✅ Venta registrada y Factura generada automáticamente.\nInventario actualizado.');
+      } else if (tipo === 'compra') {
+        alert('✅ Compra registrada.\nInventario aumentado.');
+      } else if (tipo === 'cotizacion') {
+        alert('✅ Cotización guardada.\nNo se modificó el inventario.');
+      }
+    }
+
+    function nombrePersona(id, tipo, fallbackNombre) {
+      const lista = tipo === 'compra' ? db.proveedores : db.clientes;
+      const found = lista.find(x => x.id == id);
+      return found?.nombre || fallbackNombre || '-';
+    }
+
+    function renderVentas() {
+      const tbody = document.getElementById('tablaVentas');
+      const list = [...db.ventas].sort((a,b) => b.fecha.localeCompare(a.fecha));
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="bi bi-cart"></i><br>No hay ventas</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(v => `<tr>
+        <td>${v.numero || v.id}</td>
+        <td>${v.fecha}</td>
+        <td>${nombrePersona(v.personaId, 'venta')}</td>
+        <td>${v.items.length} item(s)</td>
+        <td>${money(v.total)}</td>
+        <td>${v.pago || '-'}${v.facturaId ? ' <span class="badge bg-success" title="Factura #'+v.facturaId+'">Factura</span>' : ''}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-secondary btn-action" onclick="imprimirDoc('venta',${v.id})" title="Imprimir"><i class="bi bi-printer"></i></button>
+          ${v.facturaId ? `<button class="btn btn-sm btn-outline-primary btn-action" onclick="imprimirDoc('factura',${v.facturaId})" title="Ver factura"><i class="bi bi-receipt"></i></button>` : ''}
+          <button class="btn btn-sm btn-outline-danger btn-action" onclick="eliminarDoc('ventas',${v.id})"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`).join('');
+    }
+    function renderCompras() {
+      const tbody = document.getElementById('tablaCompras');
+      const list = [...db.compras].sort((a,b) => b.fecha.localeCompare(a.fecha));
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="bi bi-bag"></i><br>No hay compras</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(c => `<tr>
+        <td>${c.numero || c.id}</td>
+        <td>${c.fecha}</td>
+        <td>${nombrePersona(c.personaId, 'compra')}</td>
+        <td>${c.items.length} item(s)</td>
+        <td>${money(c.total)}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-secondary btn-action" onclick="imprimirDoc('compra',${c.id})" title="Imprimir"><i class="bi bi-printer"></i></button>
+          <button class="btn btn-sm btn-outline-danger btn-action" onclick="eliminarDoc('compras',${c.id})"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`).join('');
+    }
+    function renderCotizaciones() {
+      const tbody = document.getElementById('tablaCotizaciones');
+      const list = [...db.cotizaciones].sort((a,b) => b.fecha.localeCompare(a.fecha));
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="bi bi-file-text"></i><br>No hay cotizaciones</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(c => `<tr>
+        <td>${c.numero || c.id}</td>
+        <td>${c.fecha}</td>
+        <td>${nombrePersona(c.personaId, 'cotizacion', c.clienteNombre)}</td>
+        <td>${c.validez || '-'}</td>
+        <td>${money(c.total)}</td>
+        <td><span class="badge bg-warning text-dark">${c.estado}</span></td>
+        <td>
+          <button class="btn btn-sm btn-outline-secondary btn-action" onclick="imprimirDoc('cotizacion',${c.id})"><i class="bi bi-printer"></i></button>
+          <button class="btn btn-sm btn-outline-success btn-action" onclick="convertirCotizacion(${c.id})" title="Convertir a factura"><i class="bi bi-arrow-right-circle"></i></button>
+          <button class="btn btn-sm btn-outline-danger btn-action" onclick="eliminarDoc('cotizaciones',${c.id})"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`).join('');
+    }
+    function renderFacturas() {
+      const tbody = document.getElementById('tablaFacturas');
+      const list = [...db.facturas].sort((a,b) => b.fecha.localeCompare(a.fecha));
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="bi bi-receipt"></i><br>No hay facturas</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(f => `<tr>
+        <td>${f.numero || f.id}</td>
+        <td>${f.fecha}</td>
+        <td>${nombrePersona(f.personaId, 'factura')}</td>
+        <td>${money(f.total)}</td>
+        <td><span class="badge bg-success">${f.estado}</span></td>
+        <td>
+          <button class="btn btn-sm btn-outline-secondary btn-action" onclick="imprimirDoc('factura',${f.id})"><i class="bi bi-printer"></i></button>
+          <button class="btn btn-sm btn-outline-danger btn-action" onclick="eliminarDoc('facturas',${f.id})"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`).join('');
+    }
+
+    function eliminarDoc(key, id) {
+      if (!confirm('¿Eliminar este registro?\n\nNota: El stock NO se revierte automáticamente.')) return;
+      db[key] = db[key].filter(x => x.id != id);
+      saveDB();
+      if (key === 'ventas') renderVentas();
+      if (key === 'compras') renderCompras();
+      if (key === 'cotizaciones') renderCotizaciones();
+      if (key === 'facturas') renderFacturas();
+      renderInventario();
+      renderDashboard();
+    }
+
+    function convertirCotizacion(id) {
+      const cot = db.cotizaciones.find(x => x.id == id);
+      if (!cot) return;
+      if (cot.estado === 'Convertida') return alert('Esta cotización ya fue convertida.');
+      if (!confirm('¿Convertir esta cotización en Factura?\nSe descontará el stock del inventario.')) return;
+
+      // Restar stock (usando la misma función)
+      if (!actualizarStock(cot.items, 'restar')) return;
+
+      const factura = {
+        fecha: hoy(),
+        personaId: cot.personaId,
+        items: JSON.parse(JSON.stringify(cot.items)),
+        subtotal: cot.subtotal,
+        impuestoPct: cot.impuestoPct || 0,
+        impuesto: cot.impuesto || 0,
+        total: cot.total,
+        notas: (cot.notas ? cot.notas + ' | ' : '') + 'Convertida desde Cotización #' + (cot.numero || cot.id),
+        pago: 'Efectivo',
+        estado: 'Completado',
+        origenCotizacionId: cot.id,
+        id: nextId('factura'),
+        numero: nextNumero('factura')
+      };
+
+      db.facturas.push(factura);
+      cot.estado = 'Convertida';
+      cot.facturaId = factura.id;
+      saveDB();
+
+      renderCotizaciones();
+      renderFacturas();
+      renderInventario();
+      renderDashboard();
+      alert('✅ Cotización convertida a Factura.\nInventario actualizado.');
+    }
+
+    // ===================== IMPRIMIR =====================
+    function imprimirDoc(tipo, id) {
+      const keyMap = { venta: 'ventas', compra: 'compras', cotizacion: 'cotizaciones', factura: 'facturas' };
+      const doc = db[keyMap[tipo]].find(x => x.id == id);
+      if (!doc) return;
+      const persona = (tipo === 'compra' ? db.proveedores : db.clientes).find(x => x.id == doc.personaId) || {};
+      const titles = { venta: 'COMPROBANTE DE VENTA', compra: 'COMPROBANTE DE COMPRA', cotizacion: 'COTIZACIÓN', factura: 'FACTURA' };
+      const cfg = db.config;
+
+      let rows = doc.items.map(it => `
+        <tr>
+          <td style="padding:6px;border-bottom:1px solid #eee">${it.nombre}</td>
+          <td style="padding:6px;border-bottom:1px solid #eee;text-align:center">${it.cantidad}</td>
+          <td style="padding:6px;border-bottom:1px solid #eee;text-align:right">${money(it.precio)}</td>
+          <td style="padding:6px;border-bottom:1px solid #eee;text-align:right">${money(it.subtotal)}</td>
+        </tr>`).join('');
+
+      document.getElementById('printArea').innerHTML = `
+        <div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
+            <div>
+              <h2 style="margin:0;color:#0d6efd">${cfg.nombre || 'Mi Empresa'}</h2>
+              <div style="color:#666;font-size:13px">
+                ${cfg.ruc ? 'RUC/NIT: ' + cfg.ruc + '<br>' : ''}
+                ${cfg.direccion || ''}<br>
+                ${cfg.telefono || ''} ${cfg.email ? ' | ' + cfg.email : ''}
+              </div>
+            </div>
+            <div style="text-align:right">
+              <h3 style="margin:0">${titles[tipo]}</h3>
+              <div style="font-size:14px">Nº ${String(doc.numero || doc.id).padStart(6,'0')}</div>
+              <div style="font-size:13px;color:#666">Fecha: ${doc.fecha}</div>
+              ${doc.validez ? `<div style="font-size:13px;color:#666">Válida hasta: ${doc.validez}</div>` : ''}
+            </div>
+          </div>
+          <div style="background:#f8f9fa;padding:12px;border-radius:6px;margin-bottom:20px">
+            <strong>${tipo === 'compra' ? 'Proveedor' : 'Cliente'}:</strong> ${persona.nombre || '-'}<br>
+            ${persona.doc ? 'Doc: ' + persona.doc + '<br>' : ''}
+            ${persona.tel ? 'Tel: ' + persona.tel + '<br>' : ''}
+            ${persona.dir || persona.email || ''}
+          </div>
+          <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+            <thead>
+              <tr style="background:#0d6efd;color:#fff">
+                <th style="padding:8px;text-align:left">Producto</th>
+                <th style="padding:8px;text-align:center">Cant.</th>
+                <th style="padding:8px;text-align:right">Precio</th>
+                <th style="padding:8px;text-align:right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <div style="text-align:right;margin-bottom:20px">
+            <div>Subtotal: ${money(doc.subtotal)}</div>
+            ${doc.impuesto ? `<div>Impuesto (${doc.impuestoPct}%): ${money(doc.impuesto)}</div>` : ''}
+            <div style="font-size:1.3em;font-weight:bold;margin-top:6px">TOTAL: ${money(doc.total)}</div>
+            ${doc.pago ? `<div style="font-size:13px;color:#666">Pago: ${doc.pago}</div>` : ''}
+          </div>
+          ${doc.notas ? `<div style="font-size:13px;color:#666;border-top:1px solid #eee;padding-top:12px"><strong>Notas:</strong> ${doc.notas}</div>` : ''}
+          <div style="text-align:center;margin-top:40px;font-size:12px;color:#999">Gracias por su preferencia</div>
+        </div>`;
+      window.print();
+    }
+
+    // ===================== DASHBOARD =====================
+    function renderDashboard() {
+      const ahora = new Date();
+      const mes = ahora.getMonth();
+      const anio = ahora.getFullYear();
+
+      const ventasMes = db.ventas.filter(v => {
+        const d = new Date(v.fecha);
+        return d.getMonth() === mes && d.getFullYear() === anio;
+      }).reduce((s, v) => s + v.total, 0);
+
+      const gastosMes = db.gastos.filter(g => {
+        const d = new Date(g.fecha);
+        return d.getMonth() === mes && d.getFullYear() === anio;
+      }).reduce((s, g) => s + g.monto, 0);
+
+      const valorInv = db.productos.reduce((s, p) => s + (p.stock * p.costo), 0);
+      const utilidad = ventasMes - gastosMes;
+
+      document.getElementById('statVentas').textContent = money(ventasMes);
+      document.getElementById('statGastos').textContent = money(gastosMes);
+      document.getElementById('statInventario').textContent = money(valorInv);
+      document.getElementById('statUtilidad').textContent = money(utilidad);
+
+      // Stock bajo
+      const bajos = db.productos.filter(p => p.stock <= (p.stockMin || 0));
+      const listEl = document.getElementById('stockBajoList');
+      if (!bajos.length) {
+        listEl.innerHTML = '<div class="text-muted small">Todo el stock está bien ✓</div>';
+      } else {
+        listEl.innerHTML = bajos.map(p => `
+          <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+            <span>${p.nombre}</span>
+            <span class="badge ${p.stock <= 0 ? 'badge-stock-out' : 'badge-stock-low'}">${p.stock}</span>
+          </div>`).join('');
+      }
+
+      // Últimas ventas
+      const ultimas = [...db.ventas].sort((a,b) => b.fecha.localeCompare(a.fecha)).slice(0, 5);
+      document.getElementById('ultimasVentas').innerHTML = ultimas.length
+        ? ultimas.map(v => `<tr>
+            <td>${v.numero||v.id}</td><td>${v.fecha}</td>
+            <td>${nombrePersona(v.personaId,'venta')}</td>
+            <td>${money(v.total)}</td>
+            <td><span class="badge bg-success">OK</span></td>
+          </tr>`).join('')
+        : '<tr><td colspan="5" class="text-muted text-center">Sin ventas aún</td></tr>';
+
+      // Chart
+      const labels = [];
+      const dataVentas = [];
+      const dataGastos = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(anio, mes - i, 1);
+        const m = d.getMonth();
+        const y = d.getFullYear();
+        labels.push(d.toLocaleString('es', { month: 'short', year: '2-digit' }));
+        dataVentas.push(db.ventas.filter(v => {
+          const dv = new Date(v.fecha);
+          return dv.getMonth() === m && dv.getFullYear() === y;
+        }).reduce((s, v) => s + v.total, 0));
+        dataGastos.push(db.gastos.filter(g => {
+          const dg = new Date(g.fecha);
+          return dg.getMonth() === m && dg.getFullYear() === y;
+        }).reduce((s, g) => s + g.monto, 0));
+      }
+
+      if (chartFinanzas) chartFinanzas.destroy();
+      chartFinanzas = new Chart(document.getElementById('chartFinanzas'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Ventas', data: dataVentas, backgroundColor: 'rgba(34,197,94,0.7)' },
+            { label: 'Gastos', data: dataGastos, backgroundColor: 'rgba(239,68,68,0.7)' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } },
+          scales: { y: { beginAtZero: true } }
         }
+      });
+    }
 
-        async function generateBothSidesImage() {
-            const isSueter = currentType === 'sueter';
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+    // ===================== CONFIG =====================
+    function cargarConfigForm() {
+      document.getElementById('cfgNombre').value = db.config.nombre || '';
+      document.getElementById('cfgRuc').value = db.config.ruc || '';
+      document.getElementById('cfgDireccion').value = db.config.direccion || '';
+      document.getElementById('cfgTelefono').value = db.config.telefono || '';
+      document.getElementById('cfgEmail').value = db.config.email || '';
+      document.getElementById('cfgMoneda').value = db.config.moneda || '$';
+    }
+    function guardarConfig() {
+      db.config = {
+        nombre: document.getElementById('cfgNombre').value.trim() || 'Mi Empresa',
+        ruc: document.getElementById('cfgRuc').value.trim(),
+        direccion: document.getElementById('cfgDireccion').value.trim(),
+        telefono: document.getElementById('cfgTelefono').value.trim(),
+        email: document.getElementById('cfgEmail').value.trim(),
+        moneda: document.getElementById('cfgMoneda').value.trim() || '$'
+      };
+      saveDB();
+      alert('Configuración guardada');
+    }
 
-            if (isSueter) {
-                canvas.width = 1600; canvas.height = 900;
-                ctx.fillStyle = '#f5f5f5';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#222';
-                ctx.font = 'bold 28px Segoe UI, Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('FRENTE', 400, 48);
-                ctx.fillText('ESPALDA', 1200, 48);
-
-                const colorData = products.sueter[currentColor];
-                const sides = [
-                    { src: colorData.frente, list: designs.frente, offsetX: 50 },
-                    { src: colorData.espalda, list: designs.espalda, offsetX: 850 }
-                ];
-
-                for (const side of sides) {
-                    try {
-                        const shirt = await loadImage(encodeURI(side.src));
-                        const maxW = 700, maxH = 750;
-                        const sc = Math.min(maxW / shirt.width, maxH / shirt.height) * 0.92;
-                        const w = shirt.width * sc, h = shirt.height * sc;
-                        const x = side.offsetX + (maxW - w) / 2;
-                        const y = 75 + (maxH - h) / 2;
-                        ctx.drawImage(shirt, x, y, w, h);
-
-                        for (const d of side.list) {
-                            const dImg = await loadImage(d.src);
-                            const s = d.scale / 100;
-                            const printW = 0.36, printH = 0.45, printTop = 0.26;
-                            const areaX = x + w * ((1 - printW) / 2);
-                            const areaY = y + h * printTop;
-                            const areaW = w * printW, areaH = h * printH;
-                            const dw = dImg.width * s * (areaW / 280);
-                            const dh = dImg.height * s * (areaH / 280);
-                            const dx = areaX + (areaW - dw) / 2 + (d.posX * 0.8);
-                            const dy = areaY + (areaH - dh) / 2 + (d.posY * 0.8);
-                            ctx.drawImage(dImg, dx, dy, dw, dh);
-                        }
-                    } catch (e) {
-                        console.error(e);
-                    }
-                }
-            } else {
-                canvas.width = 900; canvas.height = 1000;
-                ctx.fillStyle = '#f5f5f5';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                const shirtSrc = products[currentType][currentColor];
-                try {
-                    const shirt = await loadImage(encodeURI(shirtSrc));
-                    const maxW = 780, maxH = 850;
-                    const sc = Math.min(maxW / shirt.width, maxH / shirt.height) * 0.95;
-                    const w = shirt.width * sc, h = shirt.height * sc;
-                    const x = (canvas.width - w) / 2, y = 60 + (maxH - h) / 2;
-                    ctx.drawImage(shirt, x, y, w, h);
-
-                    let printTop = 0.26, printW = 0.36, printH = 0.45;
-                    if (currentType === 'gorra') { printTop = 0.28; printW = 0.42; printH = 0.28; }
-
-                    for (const d of designs[currentView]) {
-                        const dImg = await loadImage(d.src);
-                        const s = d.scale / 100;
-                        const areaX = x + w * ((1 - printW) / 2), areaY = y + h * printTop;
-                        const areaW = w * printW, areaH = h * printH;
-                        const dw = dImg.width * s * (areaW / 280), dh = dImg.height * s * (areaH / 280);
-                        const dx = areaX + (areaW - dw) / 2 + d.posX * 0.8;
-                        const dy = areaY + (areaH - dh) / 2 + d.posY * 0.8;
-                        ctx.drawImage(dImg, dx, dy, dw, dh);
-                    }
-                } catch (e) {
-                    console.error(e);
-                    alert('No se pudo cargar la prenda: ' + shirtSrc + '\nVerifica que el archivo exista en GitHub.');
-                }
-            }
-
-            ctx.fillStyle = 'rgba(0,0,0,0.55)';
-            ctx.font = '15px Segoe UI';
-            ctx.textAlign = 'right';
-            ctx.fillText('GRAPHITECH · DTF ESTUDIO PRO', canvas.width - 25, canvas.height - 20);
-            return canvas;
+    // ===================== EXPORT / IMPORT =====================
+    function exportarDatos() {
+      const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `respaldo_negocio_${hoy()}.json`;
+      a.click();
+    }
+    function importarDatos(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          if (!confirm('Esto reemplazará todos los datos actuales en Firebase. ¿Continuar?')) return;
+          db = data;
+          if (!db.contadores) {
+            db.contadores = { venta:1, compra:1, gasto:1, cotizacion:1, factura:1, producto:1, cliente:1, proveedor:1 };
+          }
+          saveDB();
+          alert('Datos importados a Firebase correctamente');
+        } catch (err) {
+          alert('Archivo inválido');
         }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
 
-        async function previewBothSides() {
-            if (currentType !== 'sueter') {
-                alert('La vista Frente + Espalda solo está disponible para Suéter.');
-                return;
-            }
-            const canvas = await generateBothSidesImage();
-            const dataUrl = canvas.toDataURL('image/png');
-            const win = window.open('', '_blank');
-            if (!win) {
-                alert('El navegador bloqueó la ventana emergente. Permite popups.');
-                return;
-            }
-            win.document.write(`
-                <html>
-                    <head><title>Vista Previa - Frente + Espalda</title></head>
-                    <body style="margin:0;background:#111;display:flex;justify-content:center;align-items:center;min-height:100vh;">
-                        <img src="${dataUrl}" style="max-width:98%;max-height:98%;box-shadow:0 0 30px rgba(0,0,0,0.8)">
-                    </body>
-                </html>
-            `);
-            win.document.close();
-        }
+    function borrarTodoFirebase() {
+      if (!confirm('¿Borrar TODOS los datos de Firebase?\nEsta acción no se puede deshacer.')) return;
+      if (!confirm('¿Estás completamente seguro? Se eliminará todo el inventario, ventas, facturas, etc.')) return;
 
-        async function downloadFinalPNG() {
-            try {
-                const canvas = await generateBothSidesImage();
-                const link = document.createElement('a');
-                const fecha = new Date().toISOString().slice(0, 10);
-                let nombre = 'Graphitech_';
-                if (currentType === 'sueter') nombre += `Sueter_Frente_Espalda_${fecha}.png`;
-                else if (currentType === 'gorra') nombre += `Gorra_${currentColor}_${fecha}.png`;
-                else nombre += `Camiseta_${currentColor}_${fecha}.png`;
+      db = {
+        config: { nombre: 'Mi Empresa', ruc: '', direccion: '', telefono: '', email: '', moneda: '$' },
+        productos: [],
+        clientes: [],
+        proveedores: [],
+        ventas: [],
+        compras: [],
+        gastos: [],
+        cotizaciones: [],
+        facturas: [],
+        contadores: { venta: 1, compra: 1, gasto: 1, cotizacion: 1, factura: 1, producto: 1, cliente: 1, proveedor: 1 }
+      };
+      saveDB();
+      alert('Todos los datos han sido borrados de Firebase.');
+    }
 
-                link.download = nombre;
-                link.href = canvas.toDataURL('image/png');
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } catch (err) {
-                console.error(err);
-                alert('Error al generar el PNG.\nRecarga la página (Ctrl + F5) e inténtalo de nuevo.\nSi persiste, verifica que todas las imágenes de prenda estén subidas a GitHub.');
-            }
-        }
-
-        calcularPrecio();
-    </script>
+    // ===================== INIT =====================
+    document.getElementById('fechaHoy').textContent = new Date().toLocaleDateString('es', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    // Carga desde Firebase (tiempo real). El dashboard se actualiza solo cuando llegan los datos.
+    loadDB();
+  </script>
 </body>
 </html>
