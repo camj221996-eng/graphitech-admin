@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DTF Estudio Pro | Graphitech - CORREGIDO</title>
+    <title>DTF Estudio Pro | Graphitech</title>
     <style>
         :root {
             --bg-sidebar: #121214;
@@ -233,18 +233,27 @@
         const PRECIO_GRANDE = 10;
         const EXTRA_SUETER = 5;
         const UMBRAL_GRANDE = 90;
+
         const products = {
-            camiseta: { white: 't-shirt.png', black: 't-shirt-black.png', red: 't-shirt-red.png', blue: 't-shirt-blue.png' },
+            camiseta: { 
+                white: 't-shirt.png', 
+                black: 't-shirt-black.png', 
+                red: 't-shirt-red.png', 
+                blue: 't-shirt-blue.png' 
+            },
             sueter: {
                 white: { frente: 't-shirt.png', espalda: 't-shirt.png' },
                 black: { frente: 't-shirt-black.png', espalda: 'sueter-black-back.png' },
                 red:   { frente: 't-shirt-red.png', espalda: 't-shirt-red.png' },
                 blue:  { frente: 't-shirt-blue.png', espalda: 't-shirt-blue.png' }
             },
-            // CORREGIDO: sin espacios en el nombre
-            gorra: { white: 'gorra-white1.png', black: 'gorra-black2.png' }
+            gorra: { 
+                white: 'gorra-white1.png', 
+                black: 'gorra-black2.png' 
+            }
         };
-        // Fallback por si aún tienes los archivos con espacio
+
+        // Fallback por si aún tienes archivos con espacio
         const productsFallback = {
             gorra: { white: 'gorra white1.png', black: 'gorra black2.png' }
         };
@@ -261,6 +270,7 @@
             if (scale < UMBRAL_GRANDE) return { texto: 'Insignia', color: '#22c55e', costo: PRECIO_INSIGNIA };
             return { texto: 'Grande', color: '#f59e0b', costo: PRECIO_GRANDE };
         }
+
         function calcularPrecio() {
             const list = designs[currentView];
             if (list.length === 0) {
@@ -284,12 +294,14 @@
             document.getElementById('price-detail').innerHTML = html;
             return precio;
         }
+
         function setDuenoSueter(quien) {
             duenoSueter = quien;
             document.getElementById('btn-sueter-nuestro').classList.toggle('active', quien === 'nuestro');
             document.getElementById('btn-sueter-cliente').classList.toggle('active', quien === 'cliente');
             calcularPrecio();
         }
+
         function setView(view) {
             currentView = view;
             document.getElementById('btn-frente').classList.toggle('active', view === 'frente');
@@ -302,22 +314,23 @@
             renderDesignsList();
             calcularPrecio();
         }
+
         function updateShirtImage() {
             const img = document.getElementById('shirtImage');
             if (currentType === 'sueter') {
                 const data = products.sueter[currentColor];
                 if (data) img.src = data[currentView];
             } else {
-                // intenta con nombre sin espacio, si falla usa fallback
                 let src = products[currentType][currentColor];
                 img.src = src;
                 img.onerror = () => {
-                    if(productsFallback[currentType]){
+                    if (productsFallback[currentType]) {
                         img.src = productsFallback[currentType][currentColor];
                     }
                 };
             }
         }
+
         function setProductType(type) {
             currentType = type;
             currentView = 'frente';
@@ -343,6 +356,7 @@
             renderDesignsList();
             calcularPrecio();
         }
+
         function setShirtColor(name, btn) {
             currentColor = name;
             updateShirtImage();
@@ -350,8 +364,10 @@
             picker.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
             if (btn) btn.classList.add('active');
         }
+
         const printArea = document.getElementById('print-area');
         const designsListEl = document.getElementById('designs-list');
+
         function renderDesigns() {
             printArea.innerHTML = '';
             const list = designs[currentView];
@@ -369,6 +385,7 @@
                 printArea.appendChild(img);
             });
         }
+
         function renderDesignsList() {
             designsListEl.innerHTML = '';
             const list = designs[currentView];
@@ -388,6 +405,7 @@
                 designsListEl.appendChild(item);
             });
         }
+
         function selectDesign(id) {
             selectedId = id;
             const d = designs[currentView].find(x => x.id === id);
@@ -401,6 +419,7 @@
             renderDesigns();
             renderDesignsList();
         }
+
         function deleteDesign(id) {
             designs[currentView] = designs[currentView].filter(d => d.id !== id);
             if (selectedId === id) selectedId = null;
@@ -408,10 +427,12 @@
             renderDesignsList();
             calcularPrecio();
         }
+
         function removeSelectedDesign() {
             if (selectedId === null) { alert('Selecciona un diseño primero'); return; }
             deleteDesign(selectedId);
         }
+
         function removeAllDesigns() {
             if (!confirm('¿Eliminar todos los diseños de esta cara?')) return;
             designs[currentView] = [];
@@ -420,6 +441,7 @@
             renderDesignsList();
             calcularPrecio();
         }
+
         document.getElementById('file-upload').addEventListener('change', e => {
             const files = Array.from(e.target.files);
             if (files.length === 0) return;
@@ -441,6 +463,7 @@
             });
             e.target.value = '';
         });
+
         function removeBackground() {
             if (selectedId === null) { alert('Selecciona un diseño primero'); return; }
             const d = designs[currentView].find(x => x.id === selectedId);
@@ -463,12 +486,14 @@
             };
             img.src = d.src;
         }
+
         const scaleRange = document.getElementById('scale');
         const scaleNum = document.getElementById('scale-num');
         const posXRange = document.getElementById('posX');
         const posXNum = document.getElementById('posX-num');
         const posYRange = document.getElementById('posY');
         const posYNum = document.getElementById('posY-num');
+
         function updateSelectedTransform() {
             if (selectedId === null) return;
             const d = designs[currentView].find(x => x.id === selectedId);
@@ -479,6 +504,7 @@
             renderDesigns();
             calcularPrecio();
         }
+
         function linkInputs(range, num) {
             range.addEventListener('input', () => { num.value = range.value; updateSelectedTransform(); });
             num.addEventListener('input', () => { range.value = num.value; updateSelectedTransform(); });
@@ -494,6 +520,7 @@
             const d = designs[currentView].find(x => x.id === id);
             initX = d.posX; initY = d.posY;
         }
+
         window.addEventListener('mousemove', e => {
             if (isDragging && dragId !== null) {
                 const d = designs[currentView].find(x => x.id === dragId);
@@ -512,20 +539,25 @@
                 mockup.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
             }
         });
+
         window.addEventListener('mouseup', () => { isDragging = false; dragId = null; isRotating = false; });
+
         const viewport = document.getElementById('viewport');
         const mockup = document.getElementById('mockup');
         let isRotating = false, rotStartX = 0, rotStartY = 0, rotX = -8, rotY = 0, startRotX = 0, startRotY = 0;
+
         viewport.addEventListener('mousedown', e => {
             if (e.target.classList.contains('user-design')) return;
             isRotating = true; rotStartX = e.clientX; rotStartY = e.clientY;
             startRotX = rotX; startRotY = rotY;
         });
+
         function reset3D() {
             rotX = -8; rotY = 0;
             mockup.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
         }
         reset3D();
+
         viewport.addEventListener('wheel', e => {
             if (selectedId === null) return;
             e.preventDefault();
@@ -536,11 +568,11 @@
             updateSelectedTransform();
         }, { passive: false });
 
-        // ===================== CORRECCIÓN PRINCIPAL =====================
+        // ===================== CARGA SEGURA DE IMÁGENES =====================
         function loadImage(src) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
-                // Solo usar crossOrigin si es http(s) externo, nunca para data: o local
+                // Solo crossOrigin en imágenes externas http/https
                 if (src.startsWith('http://') || src.startsWith('https://')) {
                     img.crossOrigin = 'anonymous';
                 }
@@ -558,7 +590,7 @@
             if (isSueter) {
                 canvas.width = 1600; canvas.height = 900;
                 ctx.fillStyle = '#f5f5f5';
-                ctx.fillRect(0,0,canvas.width,canvas.height);
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = '#222';
                 ctx.font = 'bold 28px Segoe UI, Arial';
                 ctx.textAlign = 'center';
@@ -573,7 +605,6 @@
 
                 for (const side of sides) {
                     try {
-                        // encodeURI arregla espacios si aún tienes archivos viejos
                         const shirt = await loadImage(encodeURI(side.src));
                         const maxW = 700, maxH = 750;
                         const sc = Math.min(maxW / shirt.width, maxH / shirt.height) * 0.92;
@@ -595,71 +626,91 @@
                             const dy = areaY + (areaH - dh) / 2 + (d.posY * 0.8);
                             ctx.drawImage(dImg, dx, dy, dw, dh);
                         }
-                    } catch(e){ console.error(e); }
+                    } catch (e) {
+                        console.error(e);
+                    }
                 }
             } else {
                 canvas.width = 900; canvas.height = 1000;
                 ctx.fillStyle = '#f5f5f5';
-                ctx.fillRect(0,0,canvas.width,canvas.height);
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
                 const shirtSrc = products[currentType][currentColor];
                 try {
                     const shirt = await loadImage(encodeURI(shirtSrc));
-                    const maxW=780, maxH=850;
-                    const sc = Math.min(maxW/shirt.width, maxH/shirt.height)*0.95;
-                    const w=shirt.width*sc, h=shirt.height*sc;
-                    const x=(canvas.width-w)/2, y=60+(maxH-h)/2;
-                    ctx.drawImage(shirt,x,y,w,h);
-                    
-                    let printTop=0.26, printW=0.36, printH=0.45;
-                    if(currentType==='gorra'){ printTop=0.28; printW=0.42; printH=0.28; }
+                    const maxW = 780, maxH = 850;
+                    const sc = Math.min(maxW / shirt.width, maxH / shirt.height) * 0.95;
+                    const w = shirt.width * sc, h = shirt.height * sc;
+                    const x = (canvas.width - w) / 2, y = 60 + (maxH - h) / 2;
+                    ctx.drawImage(shirt, x, y, w, h);
 
-                    for(const d of designs[currentView]){
+                    let printTop = 0.26, printW = 0.36, printH = 0.45;
+                    if (currentType === 'gorra') { printTop = 0.28; printW = 0.42; printH = 0.28; }
+
+                    for (const d of designs[currentView]) {
                         const dImg = await loadImage(d.src);
-                        const s=d.scale/100;
-                        const areaX=x+w*((1-printW)/2), areaY=y+h*printTop;
-                        const areaW=w*printW, areaH=h*printH;
-                        const dw=dImg.width*s*(areaW/280), dh=dImg.height*s*(areaH/280);
-                        const dx=areaX+(areaW-dw)/2+d.posX*0.8, dy=areaY+(areaH-dh)/2+d.posY*0.8;
-                        ctx.drawImage(dImg,dx,dy,dw,dh);
+                        const s = d.scale / 100;
+                        const areaX = x + w * ((1 - printW) / 2), areaY = y + h * printTop;
+                        const areaW = w * printW, areaH = h * printH;
+                        const dw = dImg.width * s * (areaW / 280), dh = dImg.height * s * (areaH / 280);
+                        const dx = areaX + (areaW - dw) / 2 + d.posX * 0.8;
+                        const dy = areaY + (areaH - dh) / 2 + d.posY * 0.8;
+                        ctx.drawImage(dImg, dx, dy, dw, dh);
                     }
-                } catch(e){
+                } catch (e) {
                     console.error(e);
-                    alert('No se pudo cargar la prenda: ' + shirtSrc + '\nAsegúrate de correr con Live Server y que el archivo exista.');
+                    alert('No se pudo cargar la prenda: ' + shirtSrc + '\nVerifica que el archivo exista en GitHub.');
                 }
             }
-            ctx.fillStyle='rgba(0,0,0,0.55)';
-            ctx.font='15px Segoe UI'; ctx.textAlign='right';
-            ctx.fillText('GRAPHITECH · DTF ESTUDIO PRO', canvas.width-25, canvas.height-20);
+
+            ctx.fillStyle = 'rgba(0,0,0,0.55)';
+            ctx.font = '15px Segoe UI';
+            ctx.textAlign = 'right';
+            ctx.fillText('GRAPHITECH · DTF ESTUDIO PRO', canvas.width - 25, canvas.height - 20);
             return canvas;
         }
 
-        async function previewBothSides(){
-            if(currentType!=='sueter'){ alert('La vista Frente + Espalda solo está disponible para Suéter.'); return; }
+        async function previewBothSides() {
+            if (currentType !== 'sueter') {
+                alert('La vista Frente + Espalda solo está disponible para Suéter.');
+                return;
+            }
             const canvas = await generateBothSidesImage();
             const dataUrl = canvas.toDataURL('image/png');
-            const win = window.open('','_blank');
-            if(!win){ alert('El navegador bloqueó la ventana emergente. Permite popups.'); return; }
-            win.document.write(`<html><head><title>Vista Previa - Frente + Espalda</title></head><body style="margin:0;background:#111;display:flex;justify-content:center;align-items:center;min-height:100vh;"><img src="${dataUrl}" style="max-width:98%;max-height:98%;box-shadow:0 0 30px rgba(0,0,0,0.8)"></body></html>`);
+            const win = window.open('', '_blank');
+            if (!win) {
+                alert('El navegador bloqueó la ventana emergente. Permite popups.');
+                return;
+            }
+            win.document.write(`
+                <html>
+                    <head><title>Vista Previa - Frente + Espalda</title></head>
+                    <body style="margin:0;background:#111;display:flex;justify-content:center;align-items:center;min-height:100vh;">
+                        <img src="${dataUrl}" style="max-width:98%;max-height:98%;box-shadow:0 0 30px rgba(0,0,0,0.8)">
+                    </body>
+                </html>
+            `);
             win.document.close();
         }
 
-        async function downloadFinalPNG(){
-            const canvas = await generateBothSidesImage();
-            try{
-                const link=document.createElement('a');
-                const fecha=new Date().toISOString().slice(0,10);
+        async function downloadFinalPNG() {
+            try {
+                const canvas = await generateBothSidesImage();
+                const link = document.createElement('a');
+                const fecha = new Date().toISOString().slice(0, 10);
                 let nombre = 'Graphitech_';
                 if (currentType === 'sueter') nombre += `Sueter_Frente_Espalda_${fecha}.png`;
                 else if (currentType === 'gorra') nombre += `Gorra_${currentColor}_${fecha}.png`;
                 else nombre += `Camiseta_${currentColor}_${fecha}.png`;
+
                 link.download = nombre;
                 link.href = canvas.toDataURL('image/png');
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-            }catch(err){
+            } catch (err) {
                 console.error(err);
-                alert('Error al generar el PNG. Si ves "tainted canvas", es porque tenías crossOrigin. Ya está corregido, recarga la página.');
+                alert('Error al generar el PNG.\nRecarga la página (Ctrl + F5) e inténtalo de nuevo.\nSi persiste, verifica que todas las imágenes de prenda estén subidas a GitHub.');
             }
         }
 
